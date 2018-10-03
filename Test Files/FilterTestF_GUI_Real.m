@@ -1,26 +1,26 @@
-function [ ] = FilterTestF_GUI( )
+function [ ] = FilterTestF_GUI_Real( )
 %FILTERTESTF_GUI Summary of this function goes here
 %   Detailed explanation goes here
 plot1 = false; % Data and Hanning window
 plot2 = false; % Fourier transformed data
 plot3 = false; % Sigmoid applied to FTdata
-plot4 = true; % Filtered data
+plot4 = true;  % Filtered data
 high_pass = false;
 close all
 
 slmin=1;slmax=30;
 sliderVala=5;
 sliderValb=5;
-f = figure;
+fig = figure('KeyPressFcn',@keypress,'units','pixels',...
+              'position',[200 200 900 600],...
+              'menubar','none',...
+              'name','Fourier GUI',...
+              'resize','off');
+          % [DistFromBottom DistFromLeft PercentWidth PercentHeight]
+ax1 = axes('Position',[0.1 0.2 0.8 0.7]);
 % pos(1) and pos(2) are the coordinate of the legend windows
 % pos(3) and pos(4) are width and height of this windows
-uicontrol('Style','slider','Callback',@sliderCallbacka,'Min',slmin,'Max',slmax,...
-                    'SliderStep',[1 1]./(slmax-slmin),'Value',sliderVala,...
-                    'Position',[50 5 200 20]);
-uicontrol('Style','slider','Callback',@sliderCallbackb,'Min',slmin,'Max',slmax,...
-                    'SliderStep',[1 1]./(slmax-slmin),'Value',sliderValb,...
-                    'Position',[320 5 200 20]);
-uicontrol('Button','button','Callback',@buttonCallback,'Position',[270 10 35 20]);
+
 a = 10^(sliderVala/5);
 b = 8*sliderValb;
 
@@ -43,11 +43,16 @@ function buttonCallback(src, evt)
     inverseTransform()
 end
 
+function [] = textboxCallback(src, evt)
+    text = get(src,'string');
+    disp(['The string in the editbox is: ',text])
+end
+
 step = 1/50;
 tLim = 10;
 
 t = 0:step:tLim-step;
-x = sin(2*pi*15*t) + sin(2*pi*20*t);
+x = sin(2*pi*10*t) + sin(2*pi*20*t);
 
 tlen = length(t)
 mirLen = 3*tlen;
@@ -88,13 +93,18 @@ fSig = f(1:length(f)/2);
 parameterTweaking()
 
 function parameterTweaking()
-    uicontrol('Style','slider','Callback',@sliderCallbacka,'Min',slmin,'Max',slmax,...
+    uicontrol(fig,'Style','slider','Callback',@sliderCallbacka,'Min',slmin,'Max',slmax,...
                     'SliderStep',[1 1]./(slmax-slmin),'Value',sliderVala,...
                     'Position',[50 5 200 20]);
-    uicontrol('Style','slider','Callback',@sliderCallbackb,'Min',slmin,'Max',slmax,...
+    uicontrol(fig,'Style','slider','Callback',@sliderCallbackb,'Min',slmin,'Max',slmax,...
                     'SliderStep',[1 1]./(slmax-slmin),'Value',sliderValb,...
-                    'Position',[320 5 200 20]);
-    uicontrol('Button','button','Callback',@buttonCallback,'Position',[270 10 35 20]);
+                    'Position',[330 5 200 20]);
+    uicontrol(fig,'Button','button','Callback',@buttonCallback,'Position',[270 10 45 30],...
+                    'String','DONE','Tag','Button1');
+    uicontrol(fig, 'Style','edit','Units','normalized','Position',[.8 .02 .06 .04],... 
+                    'CallBack',@textboxCallback,'String','1');
+    txt = uicontrol('Style','text','Units','normalized',...
+                    'Position',[.7 .02 .1 .04],'String','Cutoff Frequency:');
     
     % The Sigmoid has the form (1+a e^(-f))^-b
     sigmoid = 1./(1+a*exp(-fSig)).^b;
@@ -114,7 +124,7 @@ function parameterTweaking()
         cutoff_Freq1 = f(index);
         cutoff_Freq2 = f_cutoff;
     end
-    cutoff_Freq = cutoff_Freq2;
+    cutoff_Freq = cutoff_Freq2
     
     % Since we are dealing with mirrored data, we only plot the first half,
     %  the other half is redundant for GUI use

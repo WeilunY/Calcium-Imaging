@@ -5,13 +5,13 @@ function [stackOriginal, stack, stackAdjusted, motionCompensation, timeAxis, nor
 %[FileName2,PathName2] = uigetfile({'*.mat'},'Select the motion data exported from WCP')%%%Data source
 %%%%%%%%%%%%%%%%%%%%%% Calm period parameters
 %motionData = true; %%% Set to true if you DO have a .mat file with motion data
-fps=3.91;
 
 if motionData
     load([PathName2, FileName2]);
     movementSF=round(length(T1)/T1(length(T1))); % Sampling rate of the WCP record
 else
     movementSF=112.6; % Assumed
+    fps=3.91;
 end
 
 % This is a parameter of joining range. If there is a problem with finding a calm period, increase this parameter
@@ -40,26 +40,23 @@ imagesN=size(stack,3);
 if motionData 
     [calmTimeSt,calmTimeEnd,expStarted,expEnded, Y1, M_calm, M_mov]=...
         calmPeriod(movementSF, [PathName2 FileName2],imdilateParameter);
+    disp(M_calm)
     M_calm=M_calm-expStarted;%%%%%%%% Bounds for dynamic displacement Limit
     M_mov=M_mov-expStarted;
-    [reference]=referenceFinder(stack, fps, expStarted, calmTimeSt, calmTimeEnd, Nimages, Corrperc);
-    plot(Y1(:,3))
 else
     expStarted = 0;  
     expEnded = 299.9; % Assuming 5 minute file
-    
-    [calmTimeSt,calmTimeEnd, M_calm, M_mov, reference] = calmPeriodNoMD(stack, fps);
-    %disp('M_calm')
-    %disp(M_calm)
-    %disp('M_mov')
-    %disp(M_mov)
-    %pause()
+%    calmTimeSt = 315; %%%% Calm Period Start in Seconds <- changes with file
+%    calmTimeEnd = 460;  %%%% Calm Period End in Seconds   <- changes with file
+%   M_calm=[2 2 2 2 2 2 2 2 2 2];
+%   M_mov=[2 2 2 2 2 2 2 2 2 2];
+    [calmTimeSt,calmTimeEnd, M_calm, M_mov] = calmPeriodNoMD(stack);
+    M_calm=M_calm-expStarted;%%%%%%%% Bounds for dynamic displacement Limit
+    M_mov=M_mov-expStarted;
 end
 fps=3.91;% imagesN/(expEnded-expStarted);  %%% Full frame sampling rate;
 
-%disp(size(reference))
-%imshow(reference)
-%pause();
+[reference]=referenceFinder(stack, fps, expStarted, calmTimeSt, calmTimeEnd, Nimages, Corrperc);
 
 %%%%%%%%%%%%%%%Corection of the reference for ultrabright neurons
 brightestPerc=0.95; %%%Brightness level to be clipped
@@ -81,6 +78,17 @@ for index=1:10
     end
     rawImage=stack(:,:,round((M_calm(index)-1)*fps));
     [~, ~, M_max(index)]=globalShifter2(rawImage, referenceCropped, maxDisplacement);
+    
+    disp('index')
+    disp(index)
+    disp('M_mov')
+    disp(M_mov)
+    disp('M_mov(index)*fps')
+    disp(M_mov(index)*fps)
+    disp('round(M_mov(index)*fps)')
+    disp(round(M_mov(index)*fps))
+    disp('length(stack)')
+    disp(length(stack))
     
     rawImage=stack(:,:,round(M_mov(index)*fps));
     [~, ~, M_min(index)]=globalShifter2(rawImage, referenceCropped, maxDisplacement);

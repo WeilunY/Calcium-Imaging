@@ -19,7 +19,7 @@ FileName = '';
 PathName = '';
 filePathRootPC = 'C:\Users\LOG-G\Desktop\Alex\';
 filePathRootPC = 'C:\Users\LOG-G\Desktop\shannon\Pilo\';
-filePathRootMAC = '~/Desktop/Salk Current Projects/test/';
+filePathRootMAC = '~/Desktop/Salk Datasheets/brain/';
 
 guiHeight = 320;
 guiWidth = 600;

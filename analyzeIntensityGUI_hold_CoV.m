@@ -8,11 +8,16 @@ ignoreInitialSpiking = false; % Line 140 to change analyzable part
 % threshold_factor MINIMUM value is 7, otherwise breaks down
 % threshold_factor MAXIMUM value is 10, otherwise large data loss
 threshold_factor = 7.0; % threshold = std_neg * threshold_factor;
+%%% Any especially noisy neurons above this threshold are labelled as not
+%%% firing
+stdCutoff = 0.053;
+stdCutoff = 0.09;
 
 %%% Removes "cells" with an average intensity below a threshold
 %%% indicating that it might be just dark neuropil
 darknessThreshold = 600; % Above 1000 seems to strongly indicate a real cell
-CoV_Threshold = 5;
+%darknessThreshold = 0;
+
 
 % Will run intensity data through a high pass filter
 High_Pass_Filter = false;
@@ -21,6 +26,7 @@ Exponential_Fit = true;
 initialTotalCells = length(intavgNPCorr(:,1));
 std_negVals = ones(initialTotalCells,1);
 fps = 3.91; % frames per second of the movie
+removed_cells = zeros(length(intavgNPCorr(:,1)),1);
 frames = length(intavgNPCorr(1,:));
 
 % This designates what kind of HP filter you use
@@ -34,13 +40,12 @@ meanIntensities = zeros(initialTotalCells,1);
 
 %% Indicates what cells are too dark to be considered cells
 r=1;
-fprintf('Initial Number of cells: %d\n',initialTotalCells);
-brightness_vals = zeros( initialTotalCells,1 );
 while r < length(intavgNPCorr(:,1))
     darkLevel = mean(intavgNPCorr(r,:));
     if darkLevel < darknessThreshold
+        removed_cells(r) = 1;
         %fprintf('Removing a cell, too dark, light level: %d\n',darkLevel);
-        fprintf('Flagging a cell, too dark, light level: %d\n',darkLevel);
+        fprintf('Removing a cell, too dark, light level: %d\n',darkLevel);
     end
     brightness_vals(r) = darkLevel;
     r=r+1;
@@ -81,11 +86,15 @@ while r <= initialTotalCells
     A = intensityData(r,:);% For some reason 'A' is needed
     std_neg = std(A(A<0));% Negative Std Dev of the signal
     std_negVals(r) = std_neg;
+    if std_neg>stdCutoff
+        removed_cells(r) = 1;
+        fprintf('Removing a cell, too noisy, -std dev: %d\n',std_neg);
+    end
     r=r+1;
     waitbar(r/initialTotalCells)
 end
 close(h)
-fprintf('Avg negative std deviation DeltaF/F: %d\n', mean(std_negVals));
+fprintf('Avg brightness negative std deviation: %d\n', mean(std_negVals));
 
 %% Applies a high pass filter onto each cell
 %%% Test which filter is most optimal with /.TestFiles/FilterTestRealData.m
@@ -105,11 +114,13 @@ if High_Pass_Filter
     close(h)
 end
 
-%% Flags cells marked as unusable or fake
+%% Removes cells marked as unusable or fake
 %%% Intensity data is intavgNPCorr but with problematic cells removed
+intensityData = intensityData(~removed_cells,:);
 totalCells = length(intensityData(:,1));
+std_negVals = std_negVals(~removed_cells);
 brightness_vals = ones(length(intavgNPCorr(:,1)),1);
-fprintf('Flagged %d cells.\n', initialTotalCells-totalCells);
+fprintf('Removed %d cells.\n', length(intavgNPCorr(:,1))-totalCells);
 
 %% Defining variables used for calculations and initializes UI
 assignin('base', 'Intensity_DeltaF', intensityData);
@@ -147,10 +158,9 @@ uicontrol('style','pop','unit','pix',...
                  'value',1,'Callback',@dropdownCallback,'Parent',f);
 Calculate_Events();
 
-% May Require labeling each as global
-cellRemove;
-iStart;
-iEnd;
+global cellRemove;
+global iStart;
+global iEnd;
 
 %% Handles every keypress
 function keypress(src, evt)
@@ -205,7 +215,7 @@ function Calculate_Events()
         %%% frame ii
         for ii=startFrame:(length(A)-2) 
             %%% The following if statement will determine if a neuron has fired
-            if (A(ii)<threshold) && (A(ii+1)>threshold) && (A(ii+2)>0)
+            if (A(ii)<threshold) && (A(ii+1)>threshold) && (A(ii+2)>0) && std_negVals(i)<stdCutoff
                 number_of_events=number_of_events+1;
                 cellFireTimes = [cellFireTimes,1/(ii+1)];
                 amplitudes(number_of_events) = A(ii+1);
@@ -336,12 +346,16 @@ function Calculate_Events()
     meanIntensities;
     %%% A high Coefficient of Variation implies that the cell is extremely
     %%% noisy (has comparably large std_dev compared to baseline mean intensity)
-   % disp('Coefficients of Variation [CoV] for every cell (x1000)')
+    disp('Coefficients of Variation [CoV] for every cell (x1000)')
+    size(std_negVals)
+    size(meanIntensities)
+   % for c = 1:totalCells
+   %     CoV = std_negVals(c)./meanIntensities(c);
+   %     disp([' Cell ',num2str(c),'   CoV: ',num2str(1000*100*CoV)])
+   % end
     for c = 1:totalCells
         CoVs(c) = 1000*100*std_negVals(c)./meanIntensities(c);
-        if CoVs(c) > CoV_Threshold
-            disp([' Cell ',num2str(c),'  has a large CoV: ',num2str(CoVs(c))]);
-        end
+        %disp([' Cell ',num2str(c),'   CoV: ',num2str(1000*100*CoVs(c))]);
     end
     disp([' Avg CoV: ',num2str(mean(CoVs)),'  StdDev CoV: ',num2str(std(CoVs))]);
     

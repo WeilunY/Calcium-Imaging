@@ -21,7 +21,7 @@ Nimages
 for index=1:Nimages
     waitbar(index/ Nimages)
     for index2=(index+1):Nimages
-        index2
+        index2;
         corrMatix(index, index2)=corr2(stack(:,:,zeroPosition+step*index), stack(:,:,zeroPosition+step*index2));
     end
 end

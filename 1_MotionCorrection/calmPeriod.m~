@@ -17,10 +17,19 @@ end
 % secondPart(I:end)=[];
 
 stdVect=secondPart'; 
-stdVect(:,2)=linspace(1,length(stdVect),length(stdVect))'; % 1-300 in steps of 1
+stdVect(:,2)=linspace(1,length(stdVect),length(stdVect))'; % 
 motionSorted=sortrows(stdVect);%%%% This line and the following one are faster than "prctile" 
                                         %%% function from Statistics Toolbox from Mathworks
 
+disp('linspace(1,length(stdVect),length(stdVect))')
+disp(linspace(1,length(stdVect),length(stdVect))')
+disp('motionSorted(1:10,2)')
+disp(motionSorted(1:10,2))
+disp('motionSorted(end-9:end,2)')
+disp(motionSorted(end-9:end,2))
+
+disp('')
+disp()
 
 M_calm=motionSorted(1:10,2);
 M_mov=motionSorted(end-9:end,2);

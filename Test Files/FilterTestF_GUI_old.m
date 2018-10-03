@@ -1,14 +1,14 @@
-function [ ] = FilterTestF_GUI( )
+function [ ] = FilterTestF_GUI_old( )
 %FILTERTESTF_GUI Summary of this function goes here
 %   Detailed explanation goes here
 plot1 = false; % Data and Hanning window
 plot2 = false; % Fourier transformed data
 plot3 = false; % Sigmoid applied to FTdata
-plot4 = true; % Filtered data
-high_pass = false;
+plot4 = false; % Filtered data
+high_pass = true;
 close all
 
-slmin=1;slmax=30;
+slmin=1;slmax=10;
 sliderVala=5;
 sliderValb=5;
 f = figure;
@@ -71,8 +71,7 @@ end
 
 % Apply fast fourier transform to the data
 ft_x = fft(xMirHan);
-% time space "t" -> freqeuncy space "f'
-f = (0:length(ft_x)-1)*(1/step)/length(ft_x);
+f = (0:length(ft_x)-1)*(1/step)/length(ft_x); % t -> f
 f_leng = length(f);
 % Plot fourier transformed data
 if plot2
@@ -95,45 +94,17 @@ function parameterTweaking()
                     'SliderStep',[1 1]./(slmax-slmin),'Value',sliderValb,...
                     'Position',[320 5 200 20]);
     uicontrol('Button','button','Callback',@buttonCallback,'Position',[270 10 35 20]);
-    
-    % The Sigmoid has the form (1+a e^(-f))^-b
     sigmoid = 1./(1+a*exp(-fSig)).^b;
-    % Clever little way to find closest point to 0.5 in Sigmoid
-    [delta index] = min(abs(0.5-sigmoid)); % Method 1
-    % Closed form solution for cutoff Frequency
-    %  High pass is flipped so cutoff will come from the right instead of
-    %  from the left.
-    f_cutoff = abs( log( (2^(1/b)-1)/a ) ); % Method 2
-
     if high_pass
         sigmoidMir = [ fliplr(sigmoid), sigmoid ]; % High Pass
-        cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
-        cutoff_Freq2 = max(fSig)-f_cutoff; % From closed form
     else
         sigmoidMir = [ sigmoid, fliplr(sigmoid) ]; % Low Pass
-        cutoff_Freq1 = f(index);
-        cutoff_Freq2 = f_cutoff;
     end
-    cutoff_Freq = cutoff_Freq2;
-    
-    % Since we are dealing with mirrored data, we only plot the first half,
-    %  the other half is redundant for GUI use
-    half_f = f(1:f_leng/2);
-    half_sigmoidMir = sigmoidMir(1:f_leng/2);
-    half_ft_x = ft_x(1:f_leng/2);
-    
     % Plot Sigmoid related things
-    plot(half_f,real( half_sigmoidMir.*(max(half_ft_x)) )  );
+    plot(f,real( sigmoidMir.*(max(ft_x)) )  );
     hold on
-    plot(half_f,real( half_ft_x.*half_sigmoidMir )   );
-    
-    % Plot Vertical black line at cutoff frequency
-    plot([cutoff_Freq cutoff_Freq], [-100 150],'linewidth',1.1,'color','k')
-    % Add legend and plot labels
+    plot(f,real( ft_x.*sigmoidMir )   );
     legend('Normalized Sigmoid (*factor)','Sigmoid multiplied to F.T.x')
-    title('Fourier Transformed Function with Hamming Window')
-    xlabel('Frequency [Hz]') % x-axis label
-    ylabel('Magnitude of Intensity') % y-axis label
     hold off
 end
 

@@ -1,7 +1,7 @@
-function [ ] = FilterTestF_RealData( data )
+function [ ] = FilterTestF_RealData_GUI( data )
 %FILTERTESTF_GUI Summary of this function goes here
 %   FilterTestF_RealData( fakeData(1,:) )
-plot1 = false; % Data and Hanning window
+plot1 = true; % Data and Hanning window
 plot2 = true; % Fourier transformed data
 plot3 = true; % Sigmoid applied to FTdata
 plot4 = true; % Filtered data
@@ -15,20 +15,25 @@ else
     a = 10000000; b = 10; % LP
 end
 
-step = 1;
-tLim = length(data);
+fps = 3.81;
+
+step = 1/fps;
+tLim = length(data)/fps;
 t = 0:step:tLim-step;
 x = data;
 
-tlen = length(t)
-mirLen = 3*tlen;
+seconds = tLim
+frames = length(data)
+
+tlen = length(t); % Also Frames
+mirLen_t = 3*tlen;
 
 % Mirror your function to emulate periodicity
 tMir = 0:step:(3*tLim)-step;
 xMir = [ -fliplr(x), x, -fliplr(x) ];
 
 % Apply a hanning window to your mirrored data
-xMirHan = xMir.*transpose(hann(mirLen));
+xMirHan = xMir.*transpose(hann(mirLen_t));
 if plot1
     plot(tMir,xMir)
     hold on
@@ -42,13 +47,14 @@ end
 
 % Apply fast fourier transform to the data
 ft_x = fft(xMirHan);
+(length(ft_x)-1)*(1/step)/length(ft_x)
 f = (0:length(ft_x)-1)*(1/step)/length(ft_x); % t -> f
 % Plot fourier transformed data
 if plot2
-    plot(f,ft_x);
-    hold on
-    plot(f,real(ft_x));
-    legend('x mirrored F.T.','real(x mirrored F.T.)')
+    ft_x_unmirrored = ft_x(1:tlen);
+    f_unmirrored = f(1:tlen);
+    plot(f_unmirrored,real(ft_x_unmirrored));
+    legend('real(x mirrored F.T.)')
     hold off
     pause()
 end

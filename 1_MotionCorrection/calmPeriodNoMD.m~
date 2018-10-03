@@ -1,4 +1,4 @@
-function [ calmTimeSt,calmTimeEnd, M_calm, M_mov, reference ] = calmPeriodNoMD( stack, fps )
+function [ calmTimeSt,calmTimeEnd, M_calm, M_mov, reference ] = calmPeriodNoMD( stack )
 % Calm Period finding when you do not have Motion Data.
 frames = size(stack,3);
 
@@ -55,19 +55,16 @@ close()
 % values in descending order. ind lists the indices of these values in the
 % same order.
 [val ind] = sort(corrWithMean,'descend');
+disp(size)
 val(1:10);
 ind(1:10);
 
 
 calmTimeSt=maxWindowCorrIndex;
 calmTimeEnd=maxWindowCorrIndex+windowSize;
-%pause()
+pause()
 M_calm = ind(1:10);
 M_mov = ind( length(corrWithMean)-10: length(corrWithMean));
-M_calm(1)
-M_calm = M_calm./fps;
-M_mov = M_mov./fps;
-M_calm(1)
 
 reference_cumunulative = double(zeros( 128, 512));
 
