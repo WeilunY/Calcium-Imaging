@@ -1,11 +1,12 @@
 function [stackOriginal, stack, stackAdjusted, motionCompensation, timeAxis, normalizedMotion]=...
-    globalMC(FileName1,PathName1,FileName2,PathName2,motionData,line_to_line_motion_correction)
+    globalMC(FileName1,PathName1,FileName2,PathName2,motionData)
 %%%%%%%%%%%%%%%%%% Parameters
 %[FileName1,PathName1] = uigetfile({'*.tif'},'Select your time series data')%%%Data source
 %[FileName2,PathName2] = uigetfile({'*.mat'},'Select the motion data exported from WCP')%%%Data source
 %%%%%%%%%%%%%%%%%%%%%% Calm period parameters
 %motionData = true; %%% Set to true if you DO have a .mat file with motion data
 fps=3.91;
+line_to_line_motion_correction = True
 
 if motionData
     load([PathName2, FileName2]);

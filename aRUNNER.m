@@ -82,6 +82,8 @@ RunSeg = 1;
 RunIntAnl = 1;
 quickIntensityAnalysis = 0; % Will set other options to 0
 
+% line_to_line_motion_correction toggles line to line motion correction
+line_to_line_motion_correction = true;
 motionData = true; %%% Set to false if no WCP file
 % if false then the motion correctioin will be less accurate unlesse
 % you change calm period by hand
