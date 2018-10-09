@@ -375,35 +375,14 @@ function Intensity_DeltaF_Plotter()
     clf
     inc = 1;
     for i=iStart:iEnd
-        %%% We plot a line indicating which part of the intensity
-        %%% is a cell firing
-        binaryFiringSingleCell = binaryFiring(i,:);
-        
-        for frame=2:size(binaryFiringSingleCell,2)
-            % If cell has fired
-            if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
-                frameFiringStarts = frame;
-                % The frame it starts firing is the first time '0' shows up
-                % AFTER the firing starts
-                latentAfterFiring = find( binaryFiring( frame+1:length(binaryFiring) )==0 );
-                frameFiringStops = 1+frame+latentAfterFiring(1);
-                
-                % Make lines slightly bigger
-                frameFiringStarts = frameFiringStarts-3;
-                frameFiringStops = frameFiringStops+3;
-                
-                y = (inc-1)+0.3;
-                a = linspace(frameFiringStarts, frameFiringStops, 2);
-                b = linspace(y, y, 2);
-                plot(a,b,'r','linewidth',4)
-            end
-        end
-        %%% Finished plotting lines indicating when cells fire
-        
-        %%% Plotting actual DFF, inc spaces the plots out
         plot( intensityData(firedNeurons(i),:)+(inc-1),'linewidth',1.1)
         inc = inc+1;
         hold on;
+        
+        %%% Now we plot a line indicating which part of the intensity
+        %%% is a cell firing
+        binarFiringSingleCell = binaryFiring(cellNum,:)
+        plot(a,b,'--k','linewidth',1.2)
     end
     % done plotting data
 
