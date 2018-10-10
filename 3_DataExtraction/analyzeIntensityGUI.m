@@ -309,6 +309,8 @@ function Calculate_Events()
     
     fprintf(fileID, ['Movie is ',num2str(minutes),' minutes.','\n']);
     fprintf(fileID, ['Threshold factor is ',num2str(threshold_factor),'\n']);
+    fprintf(fileID, ['Total cells: ',num2str(totalCells),'\n']);
+    fprintf(fileID, ['Total active cells: ',num2str(activeCells),'\n']);
     fprintf(fileID, ['Total events: ',num2str(number_of_events),'\n']);
     fprintf(fileID, ['Mean intensity for all cells: ', num2str(avgIntensity),'\n']);
     fprintf(fileID, ['Average negative std deviation: ', num2str(avgStdDev),'\n']);
