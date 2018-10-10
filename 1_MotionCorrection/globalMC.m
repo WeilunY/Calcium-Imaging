@@ -1,5 +1,6 @@
 function [stackOriginal, stack, stackAdjusted, motionCompensation, timeAxis, normalizedMotion]=...
-    globalMC(FileName1,PathName1,FileName2,PathName2,motionData,line_to_line_motion_correction)
+    globalMC(FileName1,PathName1,FileName2,PathName2,motionData,...
+    performMotionCorrection, line_to_line_motion_correction)
 %%%%%%%%%%%%%%%%%% Parameters
 %[FileName1,PathName1] = uigetfile({'*.tif'},'Select your time series data')%%%Data source
 %[FileName2,PathName2] = uigetfile({'*.mat'},'Select the motion data exported from WCP')%%%Data source
@@ -43,7 +44,6 @@ if motionData
     M_calm=M_calm-expStarted;%%%%%%%% Bounds for dynamic displacement Limit
     M_mov=M_mov-expStarted;
     [reference]=referenceFinder(stack, fps, expStarted, calmTimeSt, calmTimeEnd, Nimages, Corrperc);
-    plot(Y1(:,3))
 else
     expStarted = 0;  
     expEnded = 299.9; % Assuming 5 minute file
@@ -179,7 +179,8 @@ legend('show')
 grid minor
 FileName1(end-2:end)='fig';
 fpath = [PathName1, 'Data/'];
-saveas(gcf, fullfile(fpath, FileName1), 'fig');
+%saveas(gcf, fullfile(fpath, FileName1), 'fig');
+
 %pause;
 close;
 end

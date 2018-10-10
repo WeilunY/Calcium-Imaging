@@ -119,30 +119,49 @@ file %%% Full PATHNAME + FILENAME for the original files
 fileData; %%% Full PATHNAME/Data + FILENAME for outputing data
 
 %qualityChecker(imageCN, stackAdjustedCut, maskStructInt, maskStack, intensityData)
-if RunMC && ~quickIntensityAnalysis 
-    run_motion_correction( fileData,PathName,FileName1,FileName2,motionData )
+
+
+if RunMC
+run_motion_correction()
+run_segmentation()
+
+
+%%%%% Run Motion Correction
+function run_motion_correction()
+    if RunMC && ~quickIntensityAnalysis 
+        [performMotionCorrection, line_to_line_motion_correction] = initialGUI_MC();
+
+        globalMC(FileName1,PathName,FileName2,PathName,motionData, performMotionCorrection, line_to_line_motion_correction);
+        load([fileData,'.mat']);
+        if motionData
+            load([PathName,FileName2]);
+        else
+            Y1 = 0;
+        end
+            %%%%% Run Motion Removal To Clean Up Movie
+        motionCutterGUI(motionCompensation, stackAdjusted,Y1,[fileData,' motionCut_Output'],motionData);
+        load([fileData,' motionCut_Output.mat']);
+            %%%%% Save The Final Tiff Stack For Reference Later
+        toTiff(stackAdjustedCut,[fileData,' CUT']);
+    end
 end
-if RunSeg  && ~quickIntensityAnalysis 
-    run_segmentation( fileData,region )
+
+    %%%%% Run Segmentation 
+function run_segmentation()
+    if RunSeg  && ~quickIntensityAnalysis 
+        load([fileData,' motionCut_Output.mat']);
+        tif2IntensitiesMatt(stackAdjustedCut,10,[fileData,' segOutput'], region);
+    end
 end
+    %%%%% Run Intensity Analysis
 if quickIntensityAnalysis || RunIntAnl
-    run_intensity_and_data_analysis( fileData )
+    load([fileData,' motionCut_Output.mat']);
+    load([fileData,' segOutput.mat']);
+    analyzeIntensityGUI( intavgNPCorr, [fileData,' intensity data']);
+    load([fileData,' intensity data.mat']);
+    intensityZ( stackAdjustedCut, intavgNPCorr, firingTimes, binaryFiring, firedNeurons, fileData);
 end
 
-% %%%%% Run Segmentation
-% function run_segmentation()
-%     load([fileData,' motionCut_Output.mat']);
-%     tif2IntensitiesMatt(stackAdjustedCut,10,[fileData,' segOutput'], region);
-% end
-
-%%%%% Run Intensity Analysis
-% function run_intensity_analysis()
-%     load([fileData,' motionCut_Output.mat']);
-%     load([fileData,' segOutput.mat']);
-%     analyzeIntensityGUI( intavgNPCorr, [fileData,' intensity data']);
-%     load([fileData,' intensity data.mat']);
-%     intensityZ( stackAdjustedCut, intavgNPCorr, firingTimes, binaryFiring, firedNeurons, fileData);
-% end
 
 
 end

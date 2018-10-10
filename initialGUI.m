@@ -24,6 +24,8 @@ filePathRootMAC = '~/Desktop/Salk Datasheets/brain/';
 guiHeight = 320;
 guiWidth = 600;
 
+%%% POSITION: [left bottom width height]
+
 % 'position', all distance units in pixels: [xdist ydist width height]
 S.fh = figure('units','pixels',...
             'position',[300 300 guiWidth guiHeight],...
