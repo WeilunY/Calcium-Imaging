@@ -16,7 +16,7 @@ CoV_Threshold = 5;
 
 % Will run intensity data through a high pass filter
 High_Pass_Filter = false;
-Exponential_Fit = true;
+Exponential_Fit = false;
 
 initialTotalCells = length(intavgNPCorr(:,1));
 std_negVals = ones(initialTotalCells,1);
@@ -184,7 +184,6 @@ function Calculate_Events()
     %%% Initializing variables to be used for each cell
     amplitudes = [];
     number_of_events = 0;
-    avgEventSizes = [];
     firedNeurons = [];
     firingThresholds = [];
     avgEventSizes = [];
@@ -206,6 +205,7 @@ function Calculate_Events()
         for ii=startFrame:(length(A)-2) 
             %%% The following if statement will determine if a neuron has fired
             if (A(ii)<threshold) && (A(ii+1)>threshold) && (A(ii+2)>0)
+                %%% IF CELL IS FIRING ____________________________________
                 number_of_events=number_of_events+1;
                 cellFireTimes = [cellFireTimes,1/(ii+1)];
                 amplitudes(number_of_events) = A(ii+1);
@@ -220,13 +220,17 @@ function Calculate_Events()
                  %%% 800ms x 3.91fps =~= 3 frames, events cannot be closer
          %       ii=ii+round(.8*fps);
                  ii=ii+2; % Events CAN be closer but we skip a lil ahead
+                 %%% IF CELL IS FIRING ____________________________________
             end
         end
+        % If the cell DID FIRE
         if ~isempty(event_vals)
+            %%% IF CELL IS FIRING ____________________________________
             firedNeurons=[firedNeurons,i];
             firingThresholds=[firingThresholds,threshold];
             avgEventSizes=[avgEventSizes,sum(event_vals)/number_of_events];
             firingTimes = [firingTimes,cellFireTimes];
+            %%% IF CELL IS FIRING ____________________________________
         end
         if isempty(event_vals)
             firingThresholds=[firingThresholds,0];
@@ -314,10 +318,6 @@ function Calculate_Events()
     fprintf(fileID, ['Total events: ',num2str(number_of_events),'\n']);
     fprintf(fileID, ['Mean intensity for all cells: ', num2str(avgIntensity),'\n']);
     fprintf(fileID, ['Average negative std deviation: ', num2str(avgStdDev),'\n']);
-    fprintf(fileID, ['Lowest and Highest Neg.Std.Dev: ', num2str(min(std_negVals)), ...
-        ', ', num2str(max(std_negVals)),'\n']);
-    fprintf(fileID, ['Size of negative std deviation divided mean intensity: ',...
-        num2str(avgStdDev/avgIntensity),'\n']);
     fprintf(fileID, ['Percent active cells: ',num2str((100*activeCells/totalCells)),'\n']);
     fprintf(fileID, ['Percent active cells per minute: ',num2str(percentActiveCells),'\n']);
     fprintf(fileID, ['Number of events per minute: ',num2str((number_of_events)/minutes),'\n']);
@@ -325,6 +325,9 @@ function Calculate_Events()
         (number_of_events/activeCells)/minutes),'\n']);
     fprintf(fileID, ['Avg active cells per minute (lower bound): ',...
         num2str(avgActiveCellsPerMin),'\n']);
+    fprintf(fileID, '\n\n\n')
+    fprintf(fileID, ['Lowest and Highest Neg.Std.Dev: ', num2str(min(std_negVals)), ...
+        ', ', num2str(max(std_negVals)),'\n']);
     fprintf(fileID, ['Avg amplitude per event: ',num2str(mean(amplitudes)),'\n']);
     fprintf(fileID, ['Lowest and Highest amplitude: ', num2str(min(amplitudes)),...
         ', ', num2str(max(amplitudes)),'\n']);
@@ -380,7 +383,7 @@ function Intensity_DeltaF_Plotter()
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
         binaryFiringSingleCell = binaryFiring(i,:);
-        
+        disp(i)
         for frame=2:size(binaryFiringSingleCell,2)
             % If cell has fired
             if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
