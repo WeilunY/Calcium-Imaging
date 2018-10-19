@@ -166,7 +166,7 @@ end
 timeAxis=linspace(expStarted,expEnded, imagesN);
 FileName1(end-2:end)='mat';
 fpath = [PathName1, 'Data/'];
-save(fullfile(fpath, FileName1),'stackOriginal', 'stack', 'stackAdjusted', 'motionCompensation', 'timeAxis', 'normalizedMotion');
+save(fullfile(fpath, FileName1),'stackOriginal', 'stack', 'stackAdjusted', 'motionCompensation', 'timeAxis', 'normalizedMotion', 'calmTimeSt');
 close (a);
 
 plot(timeAxis,normalizedMotion,'DisplayName','normalizedMotion');
