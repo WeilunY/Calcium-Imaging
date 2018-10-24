@@ -31,6 +31,10 @@ hpFilt = designfilt('highpassiir','FilterOrder',8, ...
 
 meanIntensities = zeros(initialTotalCells,1);
 
+% Num of rows to display in one page
+numRow = 10;
+
+
 
 %% Indicates what cells are too dark to be considered cells
 r=1;
@@ -362,11 +366,11 @@ end
 function Intensity_DeltaF_Plotter()
     size( binaryFiring )
     disp(cellPlot)
-    disp(1 + (cellPlot-1)*10)
+    disp(1 + (cellPlot-1)*numRow)
     
     %INTENSITY_DELTAF_PLOTTER plots deltaF intensityData
-    iStart = 1 + (cellPlot-1)*10;
-    iEnd = min([iStart+9,length(firedNeurons)]);
+    iStart = 1 + (cellPlot-1)*(numRow - 1); %% plot 10
+    iEnd = min([iStart+numRow,length(firedNeurons)]);
     
     numPlots=length(firedNeurons(iStart:iEnd));
     cellRemove = firedNeurons(iStart);
