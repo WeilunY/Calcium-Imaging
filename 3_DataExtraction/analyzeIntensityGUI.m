@@ -351,7 +351,7 @@ function Calculate_Events()
     end
     disp([' Avg CoV: ',num2str(mean(CoVs)),'  StdDev CoV: ',num2str(std(CoVs))]);
     
-    numCellPlots = ceil(length(firedNeurons)/10);
+    numCellPlots = ceil(length(firedNeurons)/numRow);
     
     
     if length(firedNeurons)~=0
