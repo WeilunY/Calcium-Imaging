@@ -32,6 +32,7 @@ hpFilt = designfilt('highpassiir','FilterOrder',8, ...
 
 
 meanIntensities = zeros(initialTotalCells,1);
+
 % CHANGES: Make iStart a globle, remove the cellplot
 iStart = 1;
 
