@@ -8,6 +8,8 @@ ignoreInitialSpiking = false; % Line 140 to change analyzable part
 % threshold_factor MINIMUM value is 7, otherwise breaks down
 % threshold_factor MAXIMUM value is 10, otherwise large data loss
 threshold_factor = 7.0; % threshold = std_neg * threshold_factor;
+% num row display
+numRow = 10;
 
 %%% Removes "cells" with an average intensity below a threshold
 %%% indicating that it might be just dark neuropil
@@ -30,10 +32,8 @@ hpFilt = designfilt('highpassiir','FilterOrder',8, ...
 
 
 meanIntensities = zeros(initialTotalCells,1);
-
-% Num of rows to display in one page
-numRow = 10;
-
+% CHANGES: Make iStart a globle, remove the cellplot
+iStart = 1;
 
 
 %% Indicates what cells are too dark to be considered cells
@@ -161,19 +161,41 @@ function keypress(src, evt)
     val = double(get(f,'CurrentCharacter'));
     switch val
         case 28 % <-
-            if cellPlot <= 1
+            if (iStart - numRow + 1) <= 1
                 fprintf('Already on first plot\n');
-                cellPlot=1;
+                iStart=1;
             else
-                cellPlot=cellPlot-1;
+                %cellPlot=cellPlot-1;
+                %numCellPlots = ceil(length(firedNeurons)/numRow);
+                iStart = iStart - numRow;
                 Intensity_DeltaF_Plotter();
             end
             init_ui();
         case 29 % ->
-            if cellPlot >= numCellPlots
+            if (iStart + numRow - 1) >= length(firedNeurons)
                 fprintf('Already on last plot\n');
             else
-                cellPlot=cellPlot+1;
+                %cellPlot=cellPlot+1;
+                %numCellPlots = ceil(length(firedNeurons)/numRow);
+                iStart = iStart + numRow;
+                Intensity_DeltaF_Plotter();
+            end
+            init_ui();
+        case 30 % up arrow
+            if numRow == 15
+                fprintf('Reach Upper limt');
+            else
+                numRow = numRow + 1;
+                %numCellPlots = ceil(length(firedNeurons)/numRow);
+                Intensity_DeltaF_Plotter();
+            end
+            init_ui();
+        case 31 % down arrow
+            if numRow == 1
+                fprintf('Reach Lower limt');
+            else
+                numRow = numRow - 1;
+                %numCellPlots = ceil(length(firedNeurons)/numRow);
                 Intensity_DeltaF_Plotter();
             end
             init_ui();
@@ -188,11 +210,11 @@ function Calculate_Events()
     %%% Initializing variables to be used for each cell
     amplitudes = [];
     number_of_events = 0;
-    avgEventSizes = [];
     firedNeurons = [];
     firingThresholds = [];
     avgEventSizes = [];
     firingTimes = [];
+    binaryFiring = zeros(totalCells,frames);
 %%% For every segmented cell (cell i) run intensity analysis
 %%% cell i
     for i=1:length(intensityData(:,1))%%% Data analysis
@@ -210,6 +232,7 @@ function Calculate_Events()
         for ii=startFrame:(length(A)-2) 
             %%% The following if statement will determine if a neuron has fired
             if (A(ii)<threshold) && (A(ii+1)>threshold) && (A(ii+2)>0)
+                %%% IF CELL IS FIRING ____________________________________
                 number_of_events=number_of_events+1;
                 cellFireTimes = [cellFireTimes,1/(ii+1)];
                 amplitudes(number_of_events) = A(ii+1);
@@ -224,13 +247,17 @@ function Calculate_Events()
                  %%% 800ms x 3.91fps =~= 3 frames, events cannot be closer
          %       ii=ii+round(.8*fps);
                  ii=ii+2; % Events CAN be closer but we skip a lil ahead
+                 %%% IF CELL IS FIRING ____________________________________
             end
         end
+        % If the cell DID FIRE
         if ~isempty(event_vals)
+            %%% IF CELL IS FIRING ____________________________________
             firedNeurons=[firedNeurons,i];
             firingThresholds=[firingThresholds,threshold];
             avgEventSizes=[avgEventSizes,sum(event_vals)/number_of_events];
             firingTimes = [firingTimes,cellFireTimes];
+            %%% IF CELL IS FIRING ____________________________________
         end
         if isempty(event_vals)
             firingThresholds=[firingThresholds,0];
@@ -318,10 +345,6 @@ function Calculate_Events()
     fprintf(fileID, ['Total events: ',num2str(number_of_events),'\n']);
     fprintf(fileID, ['Mean intensity for all cells: ', num2str(avgIntensity),'\n']);
     fprintf(fileID, ['Average negative std deviation: ', num2str(avgStdDev),'\n']);
-    fprintf(fileID, ['Lowest and Highest Neg.Std.Dev: ', num2str(min(std_negVals)), ...
-        ', ', num2str(max(std_negVals)),'\n']);
-    fprintf(fileID, ['Size of negative std deviation divided mean intensity: ',...
-        num2str(avgStdDev/avgIntensity),'\n']);
     fprintf(fileID, ['Percent active cells: ',num2str((100*activeCells/totalCells)),'\n']);
     fprintf(fileID, ['Percent active cells per minute: ',num2str(percentActiveCells),'\n']);
     fprintf(fileID, ['Number of events per minute: ',num2str((number_of_events)/minutes),'\n']);
@@ -329,6 +352,9 @@ function Calculate_Events()
         (number_of_events/activeCells)/minutes),'\n']);
     fprintf(fileID, ['Avg active cells per minute (lower bound): ',...
         num2str(avgActiveCellsPerMin),'\n']);
+    fprintf(fileID, '\n\n\n')
+    fprintf(fileID, ['Lowest and Highest Neg.Std.Dev: ', num2str(min(std_negVals)), ...
+        ', ', num2str(max(std_negVals)),'\n']);
     fprintf(fileID, ['Avg amplitude per event: ',num2str(mean(amplitudes)),'\n']);
     fprintf(fileID, ['Lowest and Highest amplitude: ', num2str(min(amplitudes)),...
         ', ', num2str(max(amplitudes)),'\n']);
@@ -365,12 +391,11 @@ end
 %% Plotting code
 function Intensity_DeltaF_Plotter()
     size( binaryFiring )
-    disp(cellPlot)
-    disp(1 + (cellPlot-1)*numRow)
+    %numCellPlots = ceil(length(firedNeurons)/numRow);
     
     %INTENSITY_DELTAF_PLOTTER plots deltaF intensityData
-    iStart = 1 + (cellPlot-1)*(numRow - 1); %% plot 10
-    iEnd = min([iStart+numRow,length(firedNeurons)]);
+    %iStart = 1 + (cellPlot-1)*numRow;
+    iEnd = min([iStart+(numRow-1),length(firedNeurons)]);
     
     numPlots=length(firedNeurons(iStart:iEnd));
     cellRemove = firedNeurons(iStart);
@@ -384,7 +409,6 @@ function Intensity_DeltaF_Plotter()
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
         binaryFiringSingleCell = binaryFiring(i,:);
-        
         for frame=2:size(binaryFiringSingleCell,2)
             % If cell has fired
             if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
@@ -397,11 +421,14 @@ function Intensity_DeltaF_Plotter()
                 % Make lines slightly bigger
                 frameFiringStarts = frameFiringStarts-3;
                 frameFiringStops = frameFiringStops+3;
-                
+                threshold_factor;
                 y = (inc-1)+0.3;
-                a = linspace(frameFiringStarts, frameFiringStops, 2);
-                b = linspace(y, y, 2);
+                
+                a = linspace(frameFiringStarts, frameFiringStops);
+                b = linspace(y, y);
                 plot(a,b,'r','linewidth',4)
+                hold on;
+                
             end
         end
         %%% Finished plotting lines indicating when cells fire
@@ -409,7 +436,6 @@ function Intensity_DeltaF_Plotter()
         %%% Plotting actual DFF, inc spaces the plots out
         plot( intensityData(firedNeurons(i),:)+(inc-1),'linewidth',1.1)
         inc = inc+1;
-        hold on;
     end
     % done plotting data
 
