@@ -64,13 +64,13 @@ function init_ui()
     r = 15; %y range
     a = linspace(L_min, L_max, 300);
     b = linspace(y, y, 300);
-    plot(a,b,'--k','linewidth',1.5)
+    plot(a,b,'--k','linewidth',1.5, 'color', 'r')
     % Done plotting horozontal line
     
     % CHANGE: Add current threshold value next to the line
     txt = ['Current Threshold: ' num2str(y)];
 
-    text(400, y + 0.02, txt);
+    text(400, y + 0.02, txt, 'color', 'r');
     
 
     % Moving avg for original image

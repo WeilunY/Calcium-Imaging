@@ -125,7 +125,7 @@ function keypress(src, evt)
             deselectionMode = ~deselectionMode;
             stop = true;
             init_ui();
-        case 117 % u [undo all]
+        case 101 % e [undo all]
             maskStructure0=maskStructure;
             maskStack0=maskStack;
             newSeeds = [];
@@ -182,16 +182,16 @@ function displayIntructions()
     txt3 = 'p: emergegncy pause';
     txt4 = 'r: returns to reference image';
     txt5 = 't: toggles from blue selection mode to red deletion mode';
-    txt6 = 'u: undo all changes and return to initial state';
+    txt6 = 'e: erase all changes and return to initial state';
     txt7 = 'i: toggle instructions';
-    text( 10, 10, txt0, 'color', 'w')
-    text( 10, 25, txt1, 'color', 'w')
-    text( 10, 40, txt2, 'color', 'w')
-    text( 10, 55, txt3, 'color', 'w')
-    text( 10, 70, txt4, 'color', 'w')
-    text( 10, 85, txt5, 'color', 'w')
-    text( 10, 100, txt6, 'color', 'w')
-    text( 10, 115, txt7, 'color', 'w')
+    text( 10, 10, txt0, 'color', 'm')
+    text( 10, 30, txt1, 'color', 'm')
+    text( 10, 50, txt2, 'color', 'm')
+    text( 10, 70, txt3, 'color', 'm')
+    text( 10, 90, txt4, 'color', 'm')
+    text( 10, 110, txt5, 'color', 'm')
+    text( 10, 130, txt6, 'color', 'm')
+    text( 10, 150, txt7, 'color', 'm')
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%
