@@ -9,7 +9,7 @@ ignoreInitialSpiking = false; % Line 140 to change analyzable part
 % threshold_factor MAXIMUM value is 10, otherwise large data loss
 threshold_factor = 7.0; % threshold = std_neg * threshold_factor;
 % num row display
-numRow = 10;
+numRow = 4;
 
 %%% Removes "cells" with an average intensity below a threshold
 %%% indicating that it might be just dark neuropil
@@ -428,10 +428,12 @@ function Intensity_DeltaF_Plotter()
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
         binaryFiringSingleCell = binaryFiring(i,:);
+        numfire = 0;
         for frame=2:size(binaryFiringSingleCell,2)
             % If cell has fired
             if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
                 frameFiringStarts = frame;
+                numfire += 1;
                 % The frame it starts firing is the first time '0' shows up
                 % AFTER the firing starts
                 latentAfterFiring = find( binaryFiring( frame+1:length(binaryFiring) )==0 );
@@ -445,9 +447,9 @@ function Intensity_DeltaF_Plotter()
                 
                 a = linspace(frameFiringStarts, frameFiringStops);
                 b = linspace(y, y);
-                plot(a,b,'r','linewidth',4)
-                txt = num2str(frameFiringStarts + 3)
-                text(a, b, 
+                plot(a,b,'r','linewidth',4);
+                txt = num2str(frameFiringStarts + 3);
+                text(frameFiringStarts, y + 0.1, txt, 'color', 'r');
                 hold on;
 
             end
