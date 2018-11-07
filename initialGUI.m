@@ -18,7 +18,7 @@ quickIntensityAnalysis = 0;
 FileName = '';
 PathName = '';
 filePathRootPC = 'C:\Users\LOG-G\Desktop\Alex\';
-filePathRootPC = 'C:\Users\LOG-G\Desktop\shannon\Pilo\';
+filePathRootPC = 'C:\Users\LOG-G\Desktop\';
 filePathRootMAC = '~/Desktop/Salk Datasheets/brain/';
 
 guiHeight = 320;
