@@ -1,4 +1,4 @@
-function [ ] = motionCutterGUI( motionCompensation, stackAdjusted,Y1,outputName,motionData)
+function [ ] = motionCutterGUI( motionCompensation, stackAdjusted,Y1,outputName,motionData, calmTimeSt)
 %MOTIONREMOVE Summary of this function goes here
 
 %motionData = true; %%% Set to true if you DO have a .mat file with motion data
@@ -46,10 +46,15 @@ function init_ui()
     
     % Calculate avg correlation and stdDev of correlation, use them to
     %   decide on the threshold
-    avgCorrCoeff = mean(correctedCorr);
-    stdDevCorrCoeff = std(correctedCorr);
+%     avgCorrCoeff = mean(correctedCorr);
+%     stdDevCorrCoeff = std(correctedCorr);
+%     threshold = (avgCorrCoeff-stdDevCorrCoeff)+(threshold_factor-20)/100
+    avgCorrCoeff = mean(correctedCorr(calmTimeSt:calmTimeSt+50));
+    stdDevCorrCoeff = std(correctedCorr(calmTimeSt:calmTimeSt+50));
     % Any frames with an avg correlation below this will be cut
-    threshold = (avgCorrCoeff-stdDevCorrCoeff)+(threshold_factor-20)/100
+    threshold = (avgCorrCoeff-2*stdDevCorrCoeff)+(threshold_factor-20)/100
+    
+    
     
     % Code for plotting a horozontal line (threshold value)
     L_min = 0;
