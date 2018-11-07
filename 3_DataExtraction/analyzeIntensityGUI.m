@@ -428,10 +428,12 @@ function Intensity_DeltaF_Plotter()
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
         binaryFiringSingleCell = binaryFiring(i,:);
+        numfire = 0;
         for frame=2:size(binaryFiringSingleCell,2)
             % If cell has fired
             if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
                 frameFiringStarts = frame;
+                numfire = numfire +1;
                 % The frame it starts firing is the first time '0' shows up
                 % AFTER the firing starts
                 latentAfterFiring = find( binaryFiring( frame+1:length(binaryFiring) )==0 );
@@ -447,7 +449,13 @@ function Intensity_DeltaF_Plotter()
                 b = linspace(y, y);
                 plot(a,b,'r','linewidth',4);
                 txt = num2str(frameFiringStarts + 3);
-                text(frameFiringStarts, y + 0.1, txt, 'color', 'r');
+                
+                if mod(numfire, 2) == 0
+                    text(frameFiringStarts, y + 0.1, txt, 'color', 'r');
+               
+                else
+                    text(frameFiringStarts, y + 0.05, txt, 'color', 'r');
+                end
                 hold on;
 
             end
