@@ -127,9 +127,10 @@ for index=1:imagesN
     if line_to_line_motion_correction
         [~, adjustedImage]=rowShifter2(adjustedImage, referenceCropped, maxDisplacementHARD, abs(rByRcorr1), penaltyPow);
         [~, adjustedImage]=rowShifter2(adjustedImage', referenceCropped',maxDisplacementHARD, abs(rByRcorr2), penaltyPow);
+        adjustedImage=adjustedImage';
     end
     
-    adjustedImage=adjustedImage';
+    
     stackAdjusted(:,:,index)=adjustedImage;
 
     % Correlation of original images to reference image.
@@ -165,7 +166,7 @@ end
 timeAxis=linspace(expStarted,expEnded, imagesN);
 FileName1(end-2:end)='mat';
 fpath = [PathName1, 'Data/'];
-save(fullfile(fpath, FileName1),'stackOriginal', 'stack', 'stackAdjusted', 'motionCompensation', 'timeAxis', 'normalizedMotion');
+save(fullfile(fpath, FileName1),'stackOriginal', 'stack', 'stackAdjusted', 'motionCompensation', 'timeAxis', 'normalizedMotion', 'calmTimeSt');
 close (a);
 
 plot(timeAxis,normalizedMotion,'DisplayName','normalizedMotion');

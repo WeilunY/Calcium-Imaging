@@ -83,6 +83,15 @@ function checkbox1_Callback(hObject, eventdata, handles)
 %   NOT USED, AL DONE IN ABOVE FUNCTION. LEFT FOR REFERENCE
 end
 
+function checkbox2_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox1
+%   NOT USED, AL DONE IN ABOVE FUNCTION. LEFT FOR REFERENCE
+end
+
 %%% Pauses the program until the figure 'S.fh' closes
 waitfor(S.fh)
 

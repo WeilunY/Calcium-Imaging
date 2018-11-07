@@ -12,7 +12,7 @@ function [  ] = run_motion_correction( fileData,PathName,FileName1,FileName2,mot
         Y1 = 0;
     end
         %%%%% Run Motion Removal To Clean Up Movie
-    motionCutterGUI(motionCompensation, stackAdjusted,Y1,[fileData,' motionCut_Output'],motionData);
+    motionCutterGUI(motionCompensation, stackAdjusted,Y1,[fileData,' motionCut_Output'],motionData,calmTimeSt);
     load([fileData,' motionCut_Output.mat']);
         %%%%% Save The Final Tiff Stack For Reference Later
     toTiff(stackAdjustedCut,[fileData,' CUT']);
