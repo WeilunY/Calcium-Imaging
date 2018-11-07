@@ -5,8 +5,8 @@ function [ motionData, region, RunMC, RunSeg, RunIntAnl, quickIntensityAnalysis,
 
 % Code running parameters
 brainRegions = {'DG';'CA1';'CA3';'Hilus';'DG s';'DG l'};
-programOptions = {'Run from Motion Correction';'Run from Segmentation';'Only run Intensity Analysis';....
-    'Only run Motion Correction';'Only run Segmentation';};
+programOptions = {'Run from Motion Correction';'Run from Segmentation';....
+    'Only run Motion Correction';'Only run Segmentation'; 'Only run Intensity Analysis';};
 motionData = true;
 program = 'Run from Motion Correction';
 region = 'DG';
@@ -129,18 +129,19 @@ function [] = button_start_call(varargin)
     % Run from Segmentation
         RunMC  = 0;
     elseif strcmp(program,programOptions(3))
-    % Only run Intensity Analysis
-        quickIntensityAnalysis = 1;
-    elseif strcmp(program,programOptions(4))
     % Only run Motion Correction
         RunMC  = 1;
         RunSeg = 0;
         RunIntAnl = 0;
-    elseif strcmp(program,programOptions(5))
+    elseif strcmp(program,programOptions(4))
     % Only run Segmentation
         RunMC  = 0;
         RunSeg = 1;
         RunIntAnl = 0;
+    elseif strcmp(program,programOptions(5))
+    % Only run Intensity Analysis
+        quickIntensityAnalysis = 1;
+   
     end
 
     close all force

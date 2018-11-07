@@ -9,7 +9,7 @@ ignoreInitialSpiking = false; % Line 140 to change analyzable part
 % threshold_factor MAXIMUM value is 10, otherwise large data loss
 threshold_factor = 7.0; % threshold = std_neg * threshold_factor;
 % num row display
-numRow = 4;
+numRow = 10;
 
 %%% Removes "cells" with an average intensity below a threshold
 %%% indicating that it might be just dark neuropil
@@ -445,9 +445,9 @@ function Intensity_DeltaF_Plotter()
                 
                 a = linspace(frameFiringStarts, frameFiringStops);
                 b = linspace(y, y);
-                plot(a,b,'r','linewidth',4);
-                txt = num2str(frameFiringStarts + 3);
-                text(frameFiringStarts, y + 0.1, txt, 'color', 'r');
+                plot(a,b,'r','linewidth',4)
+                txt = num2str(frameFiringStarts + 3)
+                text(a, b, 
                 hold on;
 
             end
