@@ -65,7 +65,7 @@ function init_ui()
     % CHANGE: Add current threshold value next to the line
     txt = ['Current Threshold: ' num2str(y)];
     t = text(400, y + 0.02, txt);
-    t.Color([204 0 0]);
+    %st.Color([204 0 0]);
 
     % Moving avg for original image
  %   avgOriginalCorr = conv(originalCorr, ones(1,lag), 'valid')/lag; (not used)
