@@ -56,6 +56,9 @@ fprintf('Avg cell brightness: %d\n', mean(brightness_vals));
 h = waitbar(0,'Finding DF/F and fitting to exponential for each cell');
 %%% Intensity data is intavgNPCorr but with problematic cells removed
 intensityData = intavgNPCorr;
+intensityData2 = intavgNPCorr;
+
+
 %%% Two term exponential fit to the data
 x = linspace(1,frames,frames);
 % Applies the exponential fit to the data and indicates noisy cells
@@ -348,7 +351,7 @@ function Calculate_Events()
     % avgActiveCellsPerMin bins minute by minute and so is always a lower bound
     avgActiveCellsPerMin;   %%% Calculated
     % Mean intensity should be very close to zero (noise) but positive
-    avgIntensity = mean(mean(intensityData));
+    avgIntensity = mean(mean(intensityData2));
 
     disp(' ')
     % Allows us to print data to a text file
