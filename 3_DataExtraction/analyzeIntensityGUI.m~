@@ -470,16 +470,9 @@ function Intensity_DeltaF_Plotter()
         
         % add avg intensity for each cell
         txt_intensity = ['AVGI: ' num2str(round(mean(intensityData2(firedNeurons(i),:)), 1))];
-        text(10, (inc-1)+ 0.6, txt_intensity, 'color', 'r');
+        text(10, (inc-1)+ 0.4, txt_intensity, 'color', 'r');
         
-        % add neg std for each cell
-        txt_std = ['SD: ' num2str(round(std_negVals((firedNeurons(i))), 6))];
-        text(10, (inc-1)+ 0.5, txt_std, 'color', 'r');
-        
-        % add std / avgI
-        txt_std_avgi = ['SD/AVGI: ' num2str(round(std_negVals((firedNeurons(i)))/ mean(intensityData2(firedNeurons(i),:)), 6))];
-        text(10, (inc-1)+ 0.4, txt_std_avgi, 'color', 'r');
-        
+        % add
         inc = inc+1;
     end
     % done plotting data
