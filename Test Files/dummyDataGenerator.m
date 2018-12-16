@@ -5,6 +5,10 @@ frames = 1143; % exactly 5 minutes of frames
 neurons = 10;
 data = ones(neurons, frames);
 
+x = linspace(0,300,300)
+plot(x, 0.00004*x.^2)
+
+pause
 
 rng default  %initialize random number generator
 rng('shuffle')

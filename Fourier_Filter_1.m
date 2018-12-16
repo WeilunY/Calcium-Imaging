@@ -1,19 +1,20 @@
-function [ ] = FilterTestF_GUI_Real( )
+function [ ] = Fourier_Filter_1( )
 %FILTERTESTF_GUI Summary of this function goes here
 %   Detailed explanation goes here
 plot1 = false; % Data and Hanning window
-plot2 = false; % Fourier transformed data
-plot3 = false; % Sigmoid applied to FTdata
-plot4 = false;  % Filtered data
+plot2 = true; % Fourier transformed data
+plot3 = true; % Sigmoid applied to FTdata
+plot4 = true;  % Filtered data
 low_pass = false;
 close all
 
-datapoints = 50;
+datapoints = 100;
 tLim = 10; % (In Seconds)
 step = 1/datapoints;
+fps = datapoints/tLim;
 
 t = 0:step:tLim-step;
-x = sin(2*pi*8*t) + sin(2*pi*22*t);
+x = sin(2*pi*2*t) + sin(2*pi*8*t);
 
 tlen = length(t);
 mirLen = 3*tlen;
@@ -65,9 +66,6 @@ function [] = textboxCallback(src, evt)
         disp( log2(a*exp((max(fSig)-cutoff_f))+1)^-1 )
         b = log2( a * exp( (cutoff_f-max(fSig)) )+1 )^-1;
     else % High Pass
-        disp('')
-        disp('Highpass calculated Cutoff:')
-        disp('b:')
         disp( log2(a*exp(-1*cutoff_f)+1)^-1 )
         b = log2(a*exp(-1*cutoff_f)+1)^-1;
     end
@@ -151,15 +149,14 @@ function parameterTweaking()
 
         if low_pass
             sigmoidMir = [ fliplr(sigmoid), sigmoid ]; % High Pass
-            cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
+            %cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
             cutoff_Freq2 = max(fSig)-f_cutoff; % From closed form
             cutoff_Freq2 = abs(max(fSig)-f_cutoff); % From closed form
         else
             sigmoidMir = [ sigmoid, fliplr(sigmoid) ]; % Low Pass
-            cutoff_Freq1 = f(index);
-            cutoff_Freq2 = f_cutoff;
+            %cutoff_Freq1 = f(index); % From indexing
+            cutoff_Freq2 = f_cutoff; % From closed form
             disp('CUTOFF FREQ (PARAMETER TWEAKING)')
-            disp(cutoff_Freq1)
             disp(cutoff_Freq2)
         end
         cutoff_Freq = cutoff_Freq2;

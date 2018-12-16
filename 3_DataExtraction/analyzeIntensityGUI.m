@@ -9,7 +9,7 @@ ignoreInitialSpiking = false; % Line 140 to change analyzable part
 % threshold_factor MAXIMUM value is 10, otherwise large data loss
 threshold_factor = 7.0; % threshold = std_neg * threshold_factor;
 % num row display
-numRow = 4;
+numRow = 10;
 
 %%% Removes "cells" with an average intensity below a threshold
 %%% indicating that it might be just dark neuropil
@@ -18,7 +18,7 @@ CoV_Threshold = 5;
 
 % Will run intensity data through a high pass filter
 High_Pass_Filter = false;
-Exponential_Fit = true;
+Exponential_Fit = false;
 
 initialTotalCells = length(intavgNPCorr(:,1));
 std_negVals = ones(initialTotalCells,1);
@@ -32,9 +32,6 @@ hpFilt = designfilt('highpassiir','FilterOrder',8, ...
 
 
 meanIntensities = zeros(initialTotalCells,1);
-
-% CHANGES: Make iStart a globle, remove the cellplot
-iStart = 1;
 
 
 %% Indicates what cells are too dark to be considered cells
@@ -56,9 +53,6 @@ fprintf('Avg cell brightness: %d\n', mean(brightness_vals));
 h = waitbar(0,'Finding DF/F and fitting to exponential for each cell');
 %%% Intensity data is intavgNPCorr but with problematic cells removed
 intensityData = intavgNPCorr;
-intensityData2 = intavgNPCorr;
-
-
 %%% Two term exponential fit to the data
 x = linspace(1,frames,frames);
 % Applies the exponential fit to the data and indicates noisy cells
@@ -76,7 +70,7 @@ while r <= initialTotalCells
              intensityDataLinearFit(r,c) = (intensityData(r,c)-meanIntensities(r))/meanIntensities(r);
              % UNUSED
         end
-
+        
         for c=1:frames % Calculates DeltaF/F using exponential fit as avg
              intensityData(r,c) = (intensityData(r,c)-f(c))/f(c);
         end
@@ -147,7 +141,7 @@ uicontrol('Style','slider','Callback',@sliderCallback,'Min',slmin,'Max',slmax,..
                     'Position',[5 5 200 20],'Parent',f);
 uicontrol('style','push','unit','pix',...
                  'position',[620 5 80 20],...
-                 'fontsize',12,'fontweight','bold',...
+                 'fontsize',12,'fontweight','bold',... 
                  'string','REMOVE','callback',@button_call,'Parent',f);
 uicontrol('style','pop','unit','pix',...
                  'position',[520 5 80 20],'fontsize',12,...
@@ -165,41 +159,19 @@ function keypress(src, evt)
     val = double(get(f,'CurrentCharacter'));
     switch val
         case 28 % <-
-            if (iStart - numRow + 1) <= 1
+            if cellPlot <= 1
                 fprintf('Already on first plot\n');
-                iStart=1;
+                cellPlot=1;
             else
-                %cellPlot=cellPlot-1;
-                %numCellPlots = ceil(length(firedNeurons)/numRow);
-                iStart = iStart - numRow;
+                cellPlot=cellPlot-1;
                 Intensity_DeltaF_Plotter();
             end
             init_ui();
         case 29 % ->
-            if (iStart + numRow - 1) >= length(firedNeurons)
+            if cellPlot >= numCellPlots
                 fprintf('Already on last plot\n');
             else
-                %cellPlot=cellPlot+1;
-                %numCellPlots = ceil(length(firedNeurons)/numRow);
-                iStart = iStart + numRow;
-                Intensity_DeltaF_Plotter();
-            end
-            init_ui();
-        case 30 % up arrow
-            if numRow == 15
-                fprintf('Reach Upper limt');
-            else
-                numRow = numRow + 1;
-                %numCellPlots = ceil(length(firedNeurons)/numRow);
-                Intensity_DeltaF_Plotter();
-            end
-            init_ui();
-        case 31 % down arrow
-            if numRow == 1
-                fprintf('Reach Lower limt');
-            else
-                numRow = numRow - 1;
-                %numCellPlots = ceil(length(firedNeurons)/numRow);
+                cellPlot=cellPlot+1;
                 Intensity_DeltaF_Plotter();
             end
             init_ui();
@@ -222,10 +194,10 @@ function keypress(src, evt)
         otherwise
             fprintf('Button not recognized, value is: %d\n',val);
     end
-
+    
 end
 
-%% This function iterates through every point looking for firing events
+%% This function iterates through every point looking for firing events 
 function Calculate_Events()
     %%% Initializing variables to be used for each cell
     amplitudes = [];
@@ -242,14 +214,14 @@ function Calculate_Events()
         A = intensityData(i,:);
         threshold = std_negVals(i)*threshold_factor;
         event_vals=[]; % An array holding every single event size
-%%%[FOR THE LAST CELL THIS CODE RUNS IMPROPERLY FOR SOME REASON]
+%%%[FOR THE LAST CELL THIS CODE RUNS IMPROPERLY FOR SOME REASON]        
         startFrame = 5;
         if ignoreInitialSpiking
             startFrame = round(length(A)/8);
         end
         %%% Registers an event only if a value above the threshold is preceded by a value below it
         %%% frame ii
-        for ii=startFrame:(length(A)-2)
+        for ii=startFrame:(length(A)-2) 
             %%% The following if statement will determine if a neuron has fired
             if (A(ii)<threshold) && (A(ii+1)>threshold) && (A(ii+2)>0)
                 %%% IF CELL IS FIRING ____________________________________
@@ -283,18 +255,18 @@ function Calculate_Events()
             firingThresholds=[firingThresholds,0];
         end
     end
-
-
-    %% Calculating real data
+    
+    
+    %% Calculating real data 
     %%% Prints out some info
     % DATA
     %  totalCells  activeCells  number_of_events  std_neg
     %  avgEventSizes()  event_vals()  intensityData(firedNeurons(i),:)  firedNeurons()
     %  std_negVals()  amplitudes() firingTimes()
     %  seconds  minutes
-
+    
     % number_of_events
-
+    
     binaryFiringAll = binaryFiring;
     %%% binaryFiring only keeps cells that have fired.
     binaryFiring(all(binaryFiring==0,2),:)=[];
@@ -302,10 +274,10 @@ function Calculate_Events()
     minutes = seconds/60;
     activeCells=length(firedNeurons);
     events_per_active_cell=number_of_events/activeCells;
-
+    
     totalEvents = length(firingTimes(firingTimes<1));
     avgStdDev = mean(std_negVals);
-
+    
     % Variables filled inside the following loop
     activeCellsEachMin = zeros(1,ceil(minutes));
     eventsEachMin = zeros(1,ceil(minutes));
@@ -315,7 +287,7 @@ function Calculate_Events()
         if firingTimes(index) >= 1 % if it contains a number >1 than it's the cell #
             cellNum = firingTimes(index);
             % Binary flag if cell was active during a minute
-            singleActivePerMin = zeros(1,ceil(minutes));
+            singleActivePerMin = zeros(1,ceil(minutes)); 
             subindex = index+1;
             while firingTimes(subindex)<1 && subindex<length(firingTimes)
                 fireTime = round(1/firingTimes(subindex));
@@ -330,9 +302,9 @@ function Calculate_Events()
     end
     eventsEachMin;      %%% Calculated
     activeCellsEachMin; %%% Calculated
-
+    
     leftoverMinute = minutes - floor(minutes); % what fraction of a minute is left over
-
+    
     %%% Now we combine the data and calculate percent active cells from the
     %%% active cells for each minute, last minute is weighted less than the
     avgActiveCellsPerMin = 0; %%%  others based on leftoverMinute
@@ -351,13 +323,13 @@ function Calculate_Events()
     % avgActiveCellsPerMin bins minute by minute and so is always a lower bound
     avgActiveCellsPerMin;   %%% Calculated
     % Mean intensity should be very close to zero (noise) but positive
-    avgIntensity = mean(mean(intensityData2));
-
+    avgIntensity = mean(mean(intensityData));
+    
     disp(' ')
     % Allows us to print data to a text file
     dataFile = strcat(outputName,'.txt');
     fileID = fopen( dataFile,'w');
-
+    
     fprintf(fileID, ['Movie is ',num2str(minutes),' minutes.','\n']);
     fprintf(fileID, ['Threshold factor is ',num2str(threshold_factor),'\n']);
     fprintf(fileID, ['Total cells: ',num2str(totalCells),'\n']);
@@ -379,11 +351,11 @@ function Calculate_Events()
     fprintf(fileID, ['Lowest and Highest amplitude: ', num2str(min(amplitudes)),...
         ', ', num2str(max(amplitudes)),'\n']);
     fprintf(fileID, ['Avg area under curve per event: ',num2str(mean(avgEventSizes)),'\n']);
-
+    
     %%% Close the file using fclose when you finish writing.
     fclose(fileID);
     %type dataFile
-
+    
     std_negVals;
     meanIntensities;
     %%% A high Coefficient of Variation implies that the cell is extremely
@@ -396,10 +368,10 @@ function Calculate_Events()
         end
     end
     disp([' Avg CoV: ',num2str(mean(CoVs)),'  StdDev CoV: ',num2str(std(CoVs))]);
-
-    numCellPlots = ceil(length(firedNeurons)/numRow);
-
-
+    
+    numCellPlots = ceil(length(firedNeurons)/10);
+    
+    
     if length(firedNeurons)~=0
         Intensity_DeltaF_Plotter();
         init_ui();
@@ -411,14 +383,11 @@ end
 %% Plotting code
 function Intensity_DeltaF_Plotter()
     size( binaryFiring )
-
-    %numCellPlots = ceil(length(firedNeurons)/numRow);
-
+    
     %INTENSITY_DELTAF_PLOTTER plots deltaF intensityData
-    %iStart = 1 + (cellPlot-1)*numRow;
-
+    iStart = 1 + (cellPlot-1)*numRow;
     iEnd = min([iStart+(numRow-1),length(firedNeurons)]);
-
+    
     numPlots=length(firedNeurons(iStart:iEnd));
     cellRemove = firedNeurons(iStart);
 
@@ -427,21 +396,20 @@ function Intensity_DeltaF_Plotter()
     hold off; % clear remaining figures
     clf
     inc = 1;
+    mean_intensity_ticks = zeros(numPlots, 1);
     for i=iStart:iEnd
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
         binaryFiringSingleCell = binaryFiring(i,:);
-        numfire = 0;
         for frame=2:size(binaryFiringSingleCell,2)
             % If cell has fired
             if binaryFiringSingleCell(frame)==1 && binaryFiringSingleCell(frame-1)==0
                 frameFiringStarts = frame;
-                numfire = numfire +1;
                 % The frame it starts firing is the first time '0' shows up
                 % AFTER the firing starts
                 latentAfterFiring = find( binaryFiring( frame+1:length(binaryFiring) )==0 );
                 frameFiringStops = 1+frame+latentAfterFiring(1);
-
+                
                 % Make lines slightly bigger
                 frameFiringStarts = frameFiringStarts-3;
                 frameFiringStops = frameFiringStops+3;
@@ -450,37 +418,18 @@ function Intensity_DeltaF_Plotter()
                 
                 a = linspace(frameFiringStarts, frameFiringStops);
                 b = linspace(y, y);
-                plot(a,b,'r','linewidth',4);
-                txt = num2str(frameFiringStarts + 3);
-                
-                if mod(numfire, 2) == 0
-                    text(frameFiringStarts, y + 0.1, txt, 'color', 'r');
-               
-                else
-                    text(frameFiringStarts, y + 0.05, txt, 'color', 'r');
-                end
+                plot(a,b,'r','linewidth',4)
                 hold on;
-
+                
             end
         end
         %%% Finished plotting lines indicating when cells fire
-
+        
         %%% Plotting actual DFF, inc spaces the plots out
         plot( intensityData(firedNeurons(i),:)+(inc-1),'linewidth',1.1)
-        
-        % add avg intensity for each cell
-        txt_intensity = ['AVGI: ' num2str(round(mean(intensityData2(firedNeurons(i),:)), 1))];
-        text(10, (inc-1)+ 0.6, txt_intensity, 'color', 'r');
-        
-        % add neg std for each cell
-        txt_std = ['SD: ' num2str(round(std_negVals((firedNeurons(i))), 6))];
-        text(10, (inc-1)+ 0.5, txt_std, 'color', 'r');
-        
-        % add AVG/SD
-        txt_std_avgi = ['AVGI/SD: ' num2str(round(mean(intensityData2(firedNeurons(i),:))/std_negVals((firedNeurons(i))), 1))];
-        text(10, (inc-1)+ 0.4, txt_std_avgi, 'color', 'r');
-        
         inc = inc+1;
+        
+        mean_intensity_ticks(i) = meanIntensities(firedNeurons(i));
     end
     % done plotting data
 
@@ -504,7 +453,7 @@ function Intensity_DeltaF_Plotter()
             a = linspace(L_min, L_max, 2);
             b = linspace(y, y, 2);
             plot(a,b,'--k','linewidth',1.2)
-
+            
         else%%% If line is an avg
             a = linspace(L_min, L_max, 2);
             b = linspace(y, y, 2);
@@ -530,9 +479,27 @@ function Intensity_DeltaF_Plotter()
     ax2 = axes('Position',ax1_pos,'XAxisLocation','top',...
         'YAxisLocation','right','Color','none');
     % sets the y tick labels
+    
     set(ax2,'YTick',0:1,'YTickLabel',['' ''])
+size(mean_intensity_ticks)
+disp('NEEDS FIXIN')
+    %set(ax2,'YTick',0:numPlots-1,'YTickLabel',mean_intensity_ticks)
+    
     seconds=round(length(intensityData(1,:))/3.91);
     set(ax2,'XTick',0:10,'XTickLabel',[0 seconds])
+    
+    
+    %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % WONT WORK
+    % Create second Y axes on the right.
+    a2 = axes('YAxisLocation', 'Right');
+    % Hide second plot.
+ %   set(a2, 'color', 'none')
+    set(a2, 'XTick', [])
+    % Set scala for second Y.
+    %set(a2, 'YLim', [20 25])
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     x0 = 500; y0 = 0;
     width = 800; height = 600;
@@ -543,7 +510,7 @@ function sliderCallback(src, evt)
     sliderVal=get(src, 'Value');
     fprintf('Slider value is: %d\n', sliderVal );
     threshold_factor = sliderVal;
-    Calculate_Events();
+    Calculate_Events(); 
     init_ui();
 end
 
@@ -563,7 +530,7 @@ function button_call(src, evt)
   %  std_negVals(cellRemove)=[];
   %  binaryFiring(cellRemove,:)=zeros( size(intensityData,2),1 ).';
     binaryFiring = zeros(totalCells,frames);
-
+    
     Calculate_Events();
     Intensity_DeltaF_Plotter();
     init_ui();
@@ -572,13 +539,13 @@ end
 function init_ui()
     %slmin=4.5;slmax=10;
     %sliderVal = 7;
-
+    
     uicontrol('Style','slider','Callback',@sliderCallback,'Min',slmin,'Max',slmax,...
                     'SliderStep',[.5 .5]./(slmax-slmin),'Value',sliderVal,...
                     'Position',[5 5 200 20]);
     uicontrol('style','push','unit','pix',...
                  'position',[620 5 80 20],...
-                 'fontsize',12,'fontweight','bold',...
+                 'fontsize',12,'fontweight','bold',... 
                  'string','REMOVE','callback',@button_call);
     %%% Dropdown Menu
     uicontrol('style','pop','unit','pix',...

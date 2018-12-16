@@ -1,27 +1,39 @@
-function [ ] = FilterTestF_GUI_Real( )
+function [  ] = z_final_FilterTest_RealData( data )
 %FILTERTESTF_GUI Summary of this function goes here
 %   Detailed explanation goes here
 plot1 = false; % Data and Hanning window
 plot2 = false; % Fourier transformed data
 plot3 = false; % Sigmoid applied to FTdata
 plot4 = false;  % Filtered data
-low_pass = false;
+high_pass = true;
 close all
 
-datapoints = 50;
-tLim = 10; % (In Seconds)
-step = 1/datapoints;
+% datapoints = 50;
+% tLim = 10; % (In Seconds)
+% step = 1/datapoints;
+% t = 0:step:tLim-step;
+% x = sin(2*pi*8*t) + sin(2*pi*22*t);
 
+datapoints = size(data,2);
+fps = 3.91;
+tLim = datapoints/fps; % (In Seconds)
+step = 1/fps;
 t = 0:step:tLim-step;
-x = sin(2*pi*8*t) + sin(2*pi*22*t);
+x = data;
+
+disp(['tLim: ',num2str(tLim)])
+disp(['datapoints: ',num2str(datapoints)])
+disp(['step: ',num2str(step)])
 
 tlen = length(t);
+disp(['tlen: ',num2str(tlen)])
 mirLen = 3*tlen;
 % Mirror your function to emulate periodicity
 tMir = 0:step:(3*tLim)-step;
 xMir = [ -fliplr(x), x, -fliplr(x) ];
 
 slmin=0;slmax=50;
+sliderVala=5;
 sliderValb=5;
 fig = figure('KeyPressFcn',@keypress,'units','pixels',...
               'position',[200 200 900 600],...
@@ -61,25 +73,28 @@ function [] = textboxCallback(src, evt)
     text = get(src,'string');
     cutoff_f = str2double(text);
     
-    if low_pass
-        disp( log2(a*exp((max(fSig)-cutoff_f))+1)^-1 )
+    if high_pass
+        disp('CUTOFF')
+        %disp( log2(a*exp((max(fSig)-cutoff_f))+1)^-1 )
         b = log2( a * exp( (cutoff_f-max(fSig)) )+1 )^-1;
-    else % High Pass
-        disp('')
-        disp('Highpass calculated Cutoff:')
-        disp('b:')
-        disp( log2(a*exp(-1*cutoff_f)+1)^-1 )
-        b = log2(a*exp(-1*cutoff_f)+1)^-1;
+    else
+        disp('CUTOFF')
+        disp( log2(a*exp(cutoff_f)+1)^-1 )
+        b = log2(a*exp(cutoff_f)+1)^-1;
     end
     
-    %disp(['The cutoff frequency is: ',text])
-    %disp(['Parameter b set to: ',num2str(b)])
+    disp(['The cutoff frequency is: ',text])
+    disp(['Parameter b set to: ',num2str(b)])
     frequency_manually_set = true;
     parameterTweaking();
 end
 
 % Apply a hanning window to your mirrored data
 % This hanning window cuts off data a lot quicker
+disp(['xMir size: ',num2str(size(xMir))])
+disp(['mirLen: ',num2str(mirLen)])
+disp(['size hann: ',num2str(size(transpose(hann(mirLen))))])
+
 xMirHan = xMir.*transpose(hann(mirLen));
 % This hanning window is a lot wider
 big_hann = transpose(hann(3*mirLen));
@@ -99,6 +114,12 @@ end
 
 % Apply fast fourier transform to the data
 ft_x = fft(xMirHan);
+% disp(ft_x)
+% 
+% plot(real(ft_x(1:50)))
+% pause()
+
+
 % time space "t" -> freqeuncy space "f'
 f = (0:length(ft_x)-1)*(1/step)/length(ft_x);
 f_leng = length(f);
@@ -131,12 +152,17 @@ function parameterTweaking()
     
     % The Sigmoid has the form (1+a e^(-f))^-b
     sigmoid = 1./(1+a*exp(-fSig)).^b;
-    
+    for i=1:size(fSig,2)
+        ii = fSig(i);
+        disp(ii)
+        sigmoid(i) = heaviside(cutoff_f-ii);
+        disp(sigmoid(i))
+    end
     
     if frequency_manually_set
         cutoff_Freq = cutoff_f;
         
-        if low_pass
+        if high_pass
             sigmoidMir = [ fliplr(sigmoid), sigmoid ]; % High Pass
         else
             sigmoidMir = [ sigmoid, fliplr(sigmoid) ]; % Low Pass
@@ -149,18 +175,15 @@ function parameterTweaking()
         %  from the left.
         f_cutoff = abs( log( (2^(1/b)-1)/a ) ); % Method 2
 
-        if low_pass
+        if high_pass
             sigmoidMir = [ fliplr(sigmoid), sigmoid ]; % High Pass
-            cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
-            cutoff_Freq2 = max(fSig)-f_cutoff; % From closed form
+%             cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
+%             cutoff_Freq2 = max(fSig)-f_cutoff; % From closed form
             cutoff_Freq2 = abs(max(fSig)-f_cutoff); % From closed form
         else
             sigmoidMir = [ sigmoid, fliplr(sigmoid) ]; % Low Pass
-            cutoff_Freq1 = f(index);
+%             cutoff_Freq1 = f(index);
             cutoff_Freq2 = f_cutoff;
-            disp('CUTOFF FREQ (PARAMETER TWEAKING)')
-            disp(cutoff_Freq1)
-            disp(cutoff_Freq2)
         end
         cutoff_Freq = cutoff_Freq2;
     end
@@ -171,13 +194,27 @@ function parameterTweaking()
     half_sigmoidMir = sigmoidMir(1:f_leng/2);
     half_ft_x = ft_x(1:f_leng/2);
     
+    disp(['f_leng: ',num2str(f_leng)])
+    disp(['half_f size: ',num2str(size(half_f))])
+    disp(['half_sigmoidMir size: ',num2str(size(half_sigmoidMir))])
+    
+    %plot( half_sigmoidMir.*abs(max(half_ft_x)) )
+    %pause()
+    
     % Plot Sigmoid related things
-    plot(half_f,real( half_sigmoidMir.*(max(half_ft_x)) )  );
-    hold on
     plot(half_f,real( half_ft_x.*half_sigmoidMir )   );
+    hold on
+    plot(half_f,real( half_sigmoidMir.*abs(max(half_ft_x)) )  );
+    
+    
+     
+    % Plot Sigmoid related things X AXIS IS LOG
+    %semilogx(half_f,real( half_sigmoidMir.*(max(half_ft_x)) )  );
+    %hold on
+    %semilogx(half_f,real( half_ft_x.*half_sigmoidMir )   );
     
     % Plot Vertical black line at cutoff frequency
-    plot([cutoff_Freq cutoff_Freq], [-100 150],'linewidth',1.1,'color','k')
+    plot([cutoff_Freq cutoff_Freq], [-5 5],'linewidth',1.1,'color','k')
     % Add legend and plot labels
     legend('Normalized Sigmoid (*factor)','Sigmoid multiplied to F.T.x')
     title('Fourier Transformed Function with Hamming Window')
@@ -188,6 +225,11 @@ function parameterTweaking()
 end
 
 function inverseTransform()
+    ft_x = ft_x(1:size(sigmoidMir,2));
+    
+    disp(['ft_x size: ',num2str(size(ft_x))])
+    disp(['sigmoidMir size: ',num2str(size(sigmoidMir))])
+    
     % Inverse Fourier Transform to get back filtered data
     yMir = ifft(ft_x.*sigmoidMir);
     y = yMir(tlen:2*tlen-1);
