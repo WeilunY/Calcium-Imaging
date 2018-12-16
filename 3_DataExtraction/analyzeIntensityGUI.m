@@ -476,8 +476,8 @@ function Intensity_DeltaF_Plotter()
         txt_std = ['SD: ' num2str(round(std_negVals((firedNeurons(i))), 6))];
         text(10, (inc-1)+ 0.5, txt_std, 'color', 'r');
         
-        % add std / avgI
-        txt_std_avgi = ['SD/AVGI: ' num2str(round(std_negVals((firedNeurons(i)))/ mean(intensityData2(firedNeurons(i),:)), 6))];
+        % add AVG/SD
+        txt_std_avgi = ['AVGI/SD: ' num2str(round(mean(intensityData2(firedNeurons(i),:))/std_negVals((firedNeurons(i))), 1))];
         text(10, (inc-1)+ 0.4, txt_std_avgi, 'color', 'r');
         
         inc = inc+1;
