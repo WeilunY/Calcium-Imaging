@@ -114,18 +114,41 @@ function keypress(src, evt)
             instructions = ~instructions;
             init_ui();
             pause(0.2);
+        case 73 % i [toggle instructions] upper
+            instructions = ~instructions;
+            init_ui();
+            pause(0.2);
         case 114 % r [reference image]
+            image = imageRef;
+            i = 1;
+            fprintf('Currently on Reference Image\n');
+            init_ui();
+        case 82 % r [reference image]
             image = imageRef;
             i = 1;
             fprintf('Currently on Reference Image\n');
             init_ui();
         case 112 % p [pause]
             stop = true;
+        case 80 % p [pause] upper
+            stop = true;
         case 116 % t [toggle mode]
             deselectionMode = ~deselectionMode;
             stop = true;
             init_ui();
+        case 84 % t [toggle mode] upper
+            deselectionMode = ~deselectionMode;
+            stop = true;
+            init_ui();
         case 101 % e [undo all]
+            maskStructure0=maskStructure;
+            maskStack0=maskStack;
+            newSeeds = [];
+            xManual=[];
+            yManual=[];
+            image = imageRef;
+            init_ui();
+        case 69 % e [undo all]
             maskStructure0=maskStructure;
             maskStack0=maskStack;
             newSeeds = [];
