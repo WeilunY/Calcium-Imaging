@@ -41,6 +41,14 @@ iStart = 1;
 
 total_quality_factor = [];
 
+% Table Variables
+CellNumber = [];
+Intensity = [];
+NegativeSD = [];
+QualityFactor = [];
+TotalEvents = [];
+
+
 
 %% Indicates what cells are too dark to be considered cells
 r=1;
@@ -334,8 +342,6 @@ function Calculate_Events()
         end
     end
 
-    eventsEachMin;      %%% Calculated
-    activeCellsEachMin; %%% Calculated
 
     leftoverMinute = minutes - floor(minutes); % what fraction of a minute is left over
 
@@ -365,7 +371,20 @@ function Calculate_Events()
         sd = std_negVals((firedNeurons(i)));
          % add sd/avgi to total_quality_factor
         total_quality_factor = [total_quality_factor, sd/avgi]
+        
+        % Sava data to array for table
+        CellNumber = [CellNumber, firedNeurons(i)];
+        Intensity = [Intensity, avgi];
+        NegativeSD = [NegativeSD, sd];
+        QualityFactor = [QualityFactor, sd/avgi];
+        %TotalEvents = [TotalEvents, numfire];
     end
+    
+    T = table(CellNumber, Intensity, NegativeSD, QualityFactor);
+    writetable(T,'myData.csv','Delimiter',',','QuoteStrings',true);
+    type 'myData.csv'
+    print('file saved');
+
         
     avgQualityFactor = mean(total_quality_factor);
 
@@ -434,7 +453,6 @@ function Intensity_DeltaF_Plotter()
     %numCellPlots = ceil(length(firedNeurons)/numRow);
 
     %INTENSITY_DELTAF_PLOTTER plots deltaF intensityData
-    %iStart = 1 + (cellPlot-1)*numRow;
 
     iEnd = min([iStart+(numRow-1),length(firedNeurons)]);
 
@@ -502,16 +520,14 @@ function Intensity_DeltaF_Plotter()
         txt_std_avgi = ['SD/AVGI: ' num2str(sd/avgi)];
         text(10, (inc-1)+ 0.4, txt_std_avgi, 'color', 'r');
         
-       
-        
         inc = inc+1;
     end
     % done plotting data
+    
 
     % code for plotting a horozontal line
     L_min = 0;
     L_max = length(intensityData(1,:));
-    % L_min = L_max/12;
     y = 0; % constant y value
     d = 1; % direction
     r = 15;% y range
@@ -548,6 +564,7 @@ function Intensity_DeltaF_Plotter()
         num2str(threshold_factor),')'])
     ylabel('Cell Number')
     xlabel('Bottom: Frames, Top: Seconds')
+    
     % This chunk will create a second set of Axis
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ax1_pos = get(gca,'Position'); % position of first axes
@@ -558,6 +575,7 @@ function Intensity_DeltaF_Plotter()
     seconds=round(length(intensityData(1,:))/3.91);
     set(ax2,'XTick',0:10,'XTickLabel',[0 seconds])
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     x0 = 500; y0 = 0;
     width = 800; height = 600;
     set(gcf,'units','points','position',[x0,y0,width,height])
@@ -580,12 +598,8 @@ end
 
 function button_call(src, evt)
     disp( ['Removing cell ',num2str(cellRemove)] )
-  %  size( zeros( size(intensityData,2),1 ).' )
-  %  size( zeros( size(intensityData,2),0 ).' )
-  %  size(intensityData(cellRemove,:))
+    
     intensityData(cellRemove,:)=zeros( size(intensityData,2),1 ).';
-  %  std_negVals(cellRemove)=[];
-  %  binaryFiring(cellRemove,:)=zeros( size(intensityData,2),1 ).';
     binaryFiring = zeros(totalCells,frames);
 
     Calculate_Events();
@@ -594,8 +608,6 @@ function button_call(src, evt)
 end
 
 function init_ui()
-    %slmin=4.5;slmax=10;
-    %sliderVal = 7;
 
     uicontrol('Style','slider','Callback',@sliderCallback,'Min',slmin,'Max',slmax,...
                     'SliderStep',[.5 .5]./(slmax-slmin),'Value',sliderVal,...
