@@ -73,6 +73,8 @@ end
 % Apply a hanning window to your mirrored data
 % This hanning window cuts off data a lot quicker
 xMirHan = xMir.*transpose(hann(mirLen));
+
+
 % This hanning window is a lot wider
 big_hann = transpose(hann(3*mirLen));
 size(big_hann(mirLen:2*mirLen))
@@ -102,6 +104,23 @@ if plot2
     hold on
     plot(f,real(ft_x));
     legend('x mirrored F.T.','real(x mirrored F.T.)')
+    hold off
+    pause()
+end
+
+
+% Power specturm
+ft_x_2 = ft_x(1:f_leng/2) .* ft_x(1:f_leng/2);
+ft_x_s = sum(ft_x_2);
+power_spectrum = ft_x_2 / ft_x_s;
+
+if true
+    plot(f(1:f_leng/2), power_spectrum);
+    hold on
+    plot(f(1:f_leng/2), power_spectrum);
+    title('Normalized Power Spectrum');
+    xlabel('Frequency');
+    ylabel('Percentage');
     hold off
     pause()
 end
@@ -161,6 +180,8 @@ function parameterTweaking()
     
     % Since we are dealing with mirrored data, we only plot the first half,
     %  the other half is redundant for GUI use
+    
+    %% Note: un do half
     half_f = f(1:f_leng/2);
     half_sigmoidMir = sigmoidMir(1:f_leng/2);
     half_ft_x = ft_x(1:f_leng/2);
@@ -184,6 +205,7 @@ end
 function inverseTransform()
     % Inverse Fourier Transform to get back filtered data
     yMir = ifft(ft_x.*sigmoidMir);
+    yMir = yMir./ big_hann(mirLen:2*mirLen-1);
     y = yMir(tlen:2*tlen-1);
     if true
         plot(t,real(y));
