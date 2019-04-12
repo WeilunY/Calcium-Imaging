@@ -1,0 +1,25 @@
+
+addpath('./');
+
+data = csvread('sample_data.csv');
+s = size(data);
+fps = 3.91;
+
+datapoints = s(2);
+tLim = datapoints/fps; % (In Seconds)
+
+step = 1/datapoints;
+
+
+
+low_pass = false;
+
+
+datapoints = 10;
+tlim = 10;
+step = 1/datapoints;
+t = 0:step:tLim-step;
+x = sin(2*pi*2*t) + sin(2*pi*4*t);
+
+Fourier(dat, tLim, low_pass, datapoints)
+

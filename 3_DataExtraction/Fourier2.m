@@ -1,27 +1,27 @@
-function [ ] = Fourier_Filter_1( )
-%FILTERTESTF_GUI Summary of this function goes here
-%   Detailed explanation goes here
+
+% x: function to be transformed
+% tLim: the time of the vieo
+% low_pass: Boolean, whether user low or high pasw filter
+% datapoints: the num of datapoints in video
+function [] = Fourier(x, tLim, low_pass, datapoints)
+
 plot1 = true; % Data and Hanning window
 plot2 = true; % Fourier transformed data
 plot3 = true; % Sigmoid applied to FTdata
 plot4 = true;  % Filtered data
-low_pass = false;
-close all
 
-datapoints = 100;
-tLim = 10; % (In Seconds)
-step = 1/datapoints;
+step = 1;
 fps = datapoints/tLim;
 
-t = 0:step:tLim-step;
-x = sin(2*pi*2*t) + sin(2*pi*8*t);
-
+t = 1:step:datapoints;
 tlen = length(t);
-mirLen = 3*tlen;
-% Mirror your function to emulate periodicity
-tMir = 0:step:(3*tLim)-step;
-xMir = [ -fliplr(x), x, -fliplr(x) ];
+mirLen = 3 * tlen;
 
+%% Mirror function to emulate periodicity 
+tMir = 0:step:(3*datapoints)-step;
+xMir = [ fliplr(x), x, fliplr(x) ];
+
+% GUI
 slmin=0;slmax=50;
 sliderValb=5;
 fig = figure('KeyPressFcn',@keypress,'units','pixels',...
@@ -29,23 +29,16 @@ fig = figure('KeyPressFcn',@keypress,'units','pixels',...
               'menubar','none',...
               'name','Fourier GUI',...
               'resize','off');
-          % [DistFromBottom DistFromLeft PercentWidth PercentHeight]
-ax1 = axes('Position',[0.1 0.2 0.8 0.7]);
-% pos(1) and pos(2) are the coordinate of the legend windows
-% pos(3) and pos(4) are width and height of this windows
-
+          
+        
 a = 10;
 b = 10^(sliderValb/20);
 
 sigmoidMir = 0;
 frequency_manually_set = false;
 cutoff_f = 1;
-                
-% function sliderCallbacka(src, evt)
-%     sliderVala=round(get(src, 'Value'));
-%     a = 10^(sliderVala/5)
-%     parameterTweaking();
-% end
+
+%% GUI Callbacks
 
 function sliderCallbackb(src, evt)
     sliderValb=round(get(src, 'Value'));
@@ -76,9 +69,12 @@ function [] = textboxCallback(src, evt)
     parameterTweaking();
 end
 
+%% Hanning Window
 % Apply a hanning window to your mirrored data
 % This hanning window cuts off data a lot quicker
-%irHan = xMir.*transpose(hann(mirLen));
+%xMirHan = xMir.*transpose(hann(mirLen));
+
+
 % This hanning window is a lot wider
 big_hann = transpose(hann(3*mirLen));
 size(big_hann(mirLen:2*mirLen))
@@ -88,8 +84,8 @@ if plot1
     plot(tMir,xMir)
     hold on
     plot(tMir,xMirHan)
-    plot([tLim tLim], [-1.5 1.5],'linewidth',1.5,'color','k')
-    plot([2*tLim 2*tLim], [-1.5 1.5],'linewidth',1.5,'color','k')
+    plot([datapoints datapoints], [-1.5 1.5],'linewidth',1.5,'color','k')
+    plot([2*datapoints 2*datapoints], [-1.5 1.5],'linewidth',1.5,'color','k')
     legend('x Mirrored','x Mirrored Hanning')
     hold off
     pause()
@@ -97,9 +93,11 @@ end
 
 % Apply fast fourier transform to the data
 ft_x = fft(xMirHan);
+
 % time space "t" -> freqeuncy space "f'
 f = (0:length(ft_x)-1)*(1/step)/length(ft_x);
 f_leng = length(f);
+
 % Plot fourier transformed data
 if plot2
     plot(f,ft_x);
@@ -109,6 +107,24 @@ if plot2
     hold off
     pause()
 end
+
+
+% Power specturm
+ft_x_2 = ft_x(1:f_leng/2) .* conj(ft_x(1:f_leng/2));
+ft_x_s = sum(ft_x_2);
+power_spectrum = ft_x_2 / ft_x_s;
+
+if true
+    plot(f(1:f_leng/2), power_spectrum);
+    hold on
+    plot(f(1:f_leng/2), power_spectrum);
+    title('Normalized Power Spectrum');
+    xlabel('Frequency');
+    ylabel('Percentage');
+    hold off
+    pause()
+end
+
 
 fSig = f(1:length(f)/2);
 parameterTweaking()
@@ -164,6 +180,8 @@ function parameterTweaking()
     
     % Since we are dealing with mirrored data, we only plot the first half,
     %  the other half is redundant for GUI use
+    
+    %% Note: un do half
     half_f = f(1:f_leng/2);
     half_sigmoidMir = sigmoidMir(1:f_leng/2);
     half_ft_x = ft_x(1:f_leng/2);
@@ -187,6 +205,7 @@ end
 function inverseTransform()
     % Inverse Fourier Transform to get back filtered data
     yMir = ifft(ft_x.*sigmoidMir);
+    yMir = yMir./ big_hann(mirLen:2*mirLen-1);
     y = yMir(tlen:2*tlen-1);
     if true
         plot(t,real(y));
@@ -199,5 +218,6 @@ function inverseTransform()
 end
 
 %close all
+
 
 end

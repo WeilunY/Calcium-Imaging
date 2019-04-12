@@ -464,6 +464,12 @@ function Intensity_DeltaF_Plotter()
     hold off; % clear remaining figures
     clf
     inc = 1;
+    
+    % export one sample before 
+    sample = intensityData(firedNeurons(1),:);
+    file_name = "sample_data.csv";
+    csvwrite(file_name, sample);
+    
     for i=iStart:iEnd
         %%% We plot a line indicating which part of the intensity
         %%% is a cell firing
