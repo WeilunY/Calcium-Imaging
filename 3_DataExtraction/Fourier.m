@@ -10,6 +10,7 @@ plot2 = true; % Fourier transformed data
 plot3 = true; % Sigmoid applied to FTdata
 plot4 = true;  % Filtered data
 
+
 step = 1/datapoints;
 fps = datapoints/tLim;
 
@@ -110,7 +111,7 @@ end
 
 
 % Power specturm
-ft_x_2 = ft_x(1:f_leng/2) .* ft_x(1:f_leng/2);
+ft_x_2 = ft_x(1:f_leng/2) .* conj(ft_x(1:f_leng/2));
 ft_x_s = sum(ft_x_2);
 power_spectrum = ft_x_2 / ft_x_s;
 

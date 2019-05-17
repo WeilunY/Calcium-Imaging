@@ -11,5 +11,5 @@ x = sin(2*pi*2*t) + sin(2*pi*4*t);
 
 low_pass = false;
 
-Fourier(x, tLim, low_pass, datapoints)
+Fourier(x, tLim, low_pass, datapoints);
 

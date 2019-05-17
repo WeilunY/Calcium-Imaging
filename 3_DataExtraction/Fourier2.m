@@ -3,22 +3,24 @@
 % tLim: the time of the vieo
 % low_pass: Boolean, whether user low or high pasw filter
 % datapoints: the num of datapoints in video
-function [] = Fourier(x, tLim, low_pass, datapoints)
+function [result] = Fourier2(x, fps, low_pass, datapoints)
 
 plot1 = true; % Data and Hanning window
-plot2 = true; % Fourier transformed data
+plot2 = false; % Fourier transformed data
 plot3 = true; % Sigmoid applied to FTdata
 plot4 = true;  % Filtered data
 
-step = 1;
-fps = datapoints/tLim;
+step = 1/fps;
+tLim = datapoints/fps;
 
-t = 1:step:datapoints;
+
+t = 0:step:tLim - step;
 tlen = length(t);
 mirLen = 3 * tlen;
 
 %% Mirror function to emulate periodicity 
-tMir = 0:step:(3*datapoints)-step;
+%tMir = 0:step:(3*datapoints)-step;
+tMir = 0:step:(3*tLim)-step;
 xMir = [ fliplr(x), x, fliplr(x) ];
 
 % GUI
@@ -84,8 +86,8 @@ if plot1
     plot(tMir,xMir)
     hold on
     plot(tMir,xMirHan)
-    plot([datapoints datapoints], [-1.5 1.5],'linewidth',1.5,'color','k')
-    plot([2*datapoints 2*datapoints], [-1.5 1.5],'linewidth',1.5,'color','k')
+    plot([tLim tLim], [-1.5 1.5],'linewidth',1.5,'color','k')
+    plot([2*tLim 2*tLim], [-1.5 1.5],'linewidth',1.5,'color','k')
     legend('x Mirrored','x Mirrored Hanning')
     hold off
     pause()
@@ -100,10 +102,14 @@ f_leng = length(f);
 
 % Plot fourier transformed data
 if plot2
+  
     plot(f,ft_x);
     hold on
     plot(f,real(ft_x));
     legend('x mirrored F.T.','real(x mirrored F.T.)')
+    title('Fourier Transformation');
+    xlabel('Frequency [Hz]') % x-axis label
+    ylabel('Magnitude of Intensity') % y-axis label
     hold off
     pause()
 end
@@ -157,7 +163,7 @@ function parameterTweaking()
         end
     else
         % Clever little way to find closest point to 0.5 in Sigmoid
-        [delta index] = min(abs(0.5-sigmoid)); % Method 1
+        % [delta index] = min(abs(0.5-sigmoid)); % Method 1
         % Closed form solution for cutoff Frequency
         %  High pass is flipped so cutoff will come from the right instead of
         %  from the left.
@@ -165,12 +171,10 @@ function parameterTweaking()
 
         if low_pass
             sigmoidMir = [ fliplr(sigmoid), sigmoid ]; % High Pass
-            %cutoff_Freq1 = f(length(sigmoid)-index) % From indexing
-            cutoff_Freq2 = max(fSig)-f_cutoff; % From closed form
+
             cutoff_Freq2 = abs(max(fSig)-f_cutoff); % From closed form
         else
             sigmoidMir = [ sigmoid, fliplr(sigmoid) ]; % Low Pass
-            %cutoff_Freq1 = f(index); % From indexing
             cutoff_Freq2 = f_cutoff; % From closed form
             disp('CUTOFF FREQ (PARAMETER TWEAKING)')
             disp(cutoff_Freq2)
@@ -192,23 +196,25 @@ function parameterTweaking()
     plot(half_f,real( half_ft_x.*half_sigmoidMir )   );
     
     % Plot Vertical black line at cutoff frequency
-    plot([cutoff_Freq cutoff_Freq], [-100 150],'linewidth',1.1,'color','k')
+    plot([cutoff_Freq cutoff_Freq], [-5, 5],'linewidth',1.1,'color','k')
     % Add legend and plot labels
     legend('Normalized Sigmoid (*factor)','Sigmoid multiplied to F.T.x')
-    title('Fourier Transformed Function with Hamming Window')
+    title('Fourier Transformed Function with Hanning Window')
     xlabel('Frequency [Hz]') % x-axis label
     ylabel('Magnitude of Intensity') % y-axis label
     hold off
     frequency_manually_set = false;
 end
 
+
 function inverseTransform()
     % Inverse Fourier Transform to get back filtered data
     yMir = ifft(ft_x.*sigmoidMir);
     yMir = yMir./ big_hann(mirLen:2*mirLen-1);
-    y = yMir(tlen:2*tlen-1);
-    if true
-        plot(t,real(y));
+    result = yMir(tlen:2*tlen-1);
+    %disp(result);
+    if plot4
+        plot(t,real(result));
         %pause(1)
         hold on
         plot(t,x,'linewidth',0.05);
@@ -217,7 +223,6 @@ function inverseTransform()
     end
 end
 
-%close all
 
 
 end
